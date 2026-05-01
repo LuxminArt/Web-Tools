@@ -1075,6 +1075,37 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   width: 0; height: 0;
 }
 
+
+/* ── SAVE INDICATOR ── */
+@keyframes dp-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 3px 1px rgba(74,222,128,0.4); }
+  50%       { box-shadow: 0 0 7px 3px rgba(74,222,128,0.75); }
+}
+.save-spinner {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border: 1.5px solid rgba(240,240,235,0.2);
+  border-top-color: rgba(240,240,235,0.6);
+  border-radius: 50%;
+  animation: dp-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.save-dot-done {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex-shrink: 0;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
 </style>
 </head>
 <body>
@@ -1101,7 +1132,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
     <span class="topbar-title">報價單產生器</span>
-    <span id="save-indicator" style="font-size:9px;letter-spacing:0.1em;color:rgba(240,240,235,0.35);opacity:0;transition:opacity 0.4s;">● 已儲存</span>
+    <span id="save-indicator" style="font-size:9px;letter-spacing:0.08em;color:rgba(240,240,235,0.45);opacity:0;transition:opacity 0.35s;display:flex;align-items:center;"></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
     <button onclick="clearSavedState()"
@@ -2600,19 +2631,31 @@ function collectState() {
 
 function scheduleSave() {
   clearTimeout(saveTimer);
+  // show "儲存中" with spinner immediately
+  const el = document.getElementById('save-indicator');
+  if (el) {
+    el.innerHTML = '<span class="save-spinner"></span>儲存中';
+    el.style.opacity = '1';
+  }
   saveTimer = setTimeout(() => {
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify(collectState()));
+      const state = JSON.stringify(collectState());
+      localStorage.setItem(LS_KEY, state);
       showSaveIndicator();
-    } catch(e) { console.warn('Autosave failed:', e); }
+    } catch(e) {
+      console.warn('Autosave failed:', e);
+      if (el) el.style.opacity = '0';
+    }
   }, 1000);
 }
 
 function showSaveIndicator() {
   const el = document.getElementById('save-indicator');
   if (!el) return;
+  el.innerHTML = '<span class="save-dot-done"></span>已儲存';
   el.style.opacity = '1';
-  setTimeout(() => el.style.opacity = '0', 1800);
+  // keep "已儲存" visible for 3s then fade
+  setTimeout(() => { el.style.opacity = '0'; }, 3000);
 }
 
 function restoreState() {
@@ -2934,6 +2977,9 @@ function update() {
     </footer>
   `;
   // logo is now rendered inline via getLogoHTML() in template
+
+  // autosave
+  scheduleSave();
 }
 
 // init dates
@@ -2953,9 +2999,31 @@ if (dpFaceValid) dpFaceValid.textContent = fmtDate(expStr);
 renderFontPicker();
 const _initColors = getDefaultColors(); applyCombo(_initColors.bg, _initColors.text);
 renderColorPicker();
+
+// restore localStorage before first render
+const _restored = restoreState();
+
 renderPanel();
 update();
 enhanceSelects();
+
+// if restored, re-sync UI components
+if (_restored) {
+  renderFontPicker();
+  renderColorPicker();
+  document.querySelectorAll('.eselect-wrap').forEach(wrap => {
+    const sel = wrap.querySelector('select');
+    const face = wrap.querySelector('.eselect-face');
+    if (sel && face) face.textContent = sel.options[sel.selectedIndex]?.text || '';
+  });
+  // sync date picker faces
+  const _dv = g('qt-date').value;
+  const _vv = g('qt-valid').value;
+  const _fd = document.getElementById('dp-face-qt-date');
+  const _fv = document.getElementById('dp-face-qt-valid');
+  if (_fd && _dv) _fd.textContent = fmtDate(_dv);
+  if (_fv && _vv) _fv.textContent = fmtDate(_vv);
+}
 
 // attach dirty listeners to all static fields
 document.querySelectorAll('.panel input, .panel textarea, .panel select').forEach(el => {
