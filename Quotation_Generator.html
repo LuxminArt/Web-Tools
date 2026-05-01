@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>LUXMIN 報價單產生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,700;1,8..60,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=LXGW+WenKai+TC&family=Zen+Old+Mincho:wght@400;500;700&family=Kaisei+Opti:wght@400;500;700&family=Shippori+Mincho:wght@400;500;600;700&family=Dela+Gothic+One&family=Zen+Kurenaido&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
@@ -73,6 +76,7 @@ body {
   width: 380px;
   flex-shrink: 0;
   overflow-y: auto;
+  overflow-x: visible;
   padding: 20px;
   border-right: 0.5px solid var(--border);
   display: flex;
@@ -537,7 +541,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   background: #1e1e1e;
   border: 0.5px solid var(--border-mid);
   border-radius: 3px;
-  z-index: 999;
+  z-index: 9999;
   max-height: 200px;
   overflow-y: auto;
   display: none;
@@ -631,7 +635,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   background: #1e1e1e;
   border: 0.5px solid var(--border-mid);
   border-radius: 3px;
-  z-index: 1000;
+  z-index: 9999;
   max-height: 220px;
   overflow-y: auto;
   box-shadow: 0 8px 28px rgba(0,0,0,0.55);
@@ -821,6 +825,88 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 }
 .logo-reset:hover { color: var(--text); }
 
+
+/* ── FONT PICKER ── */
+.font-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.font-btn {
+  background: var(--input-bg);
+  border: 0.5px solid var(--border-mid);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+.font-btn:hover { border-color: rgba(240,240,235,0.35); }
+.font-btn.active {
+  border-color: rgba(240,240,235,0.6);
+  background: rgba(240,240,235,0.07);
+}
+.font-btn-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.font-btn-sub {
+  display: block;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+
+/* ── DOCUMENT COLOR SYSTEM ── */
+:root { --doc-bg: #0a0a0a; --doc-text: #f5f5f0; }
+.qt { background: var(--doc-bg) !important; color: var(--doc-text) !important; }
+.qt .qt-header, .qt .qt-meta, .qt .qt-totals, .qt .qt-footer
+  { border-color: color-mix(in srgb, var(--doc-text) 12%, transparent) !important; }
+.qt .qt-meta-item > span, .qt .qt-party > span, .qt .qt-footer > div > span,
+.qt .qt-notes > span, .qt .qt-table th
+  { color: color-mix(in srgb, var(--doc-text) 35%, transparent) !important; }
+.qt .qt-party p, .qt .qt-footer > div > p, .qt .qt-notes p, .qt .qt-table .td-desc
+  { color: color-mix(in srgb, var(--doc-text) 55%, transparent) !important; }
+.qt .qt-meta-item > p, .qt .qt-party .qt-party-name, .qt .qt-table td, .qt .qt-trow
+  { color: var(--doc-text) !important; }
+.qt .qt-trow { color: color-mix(in srgb, var(--doc-text) 60%, transparent) !important; }
+.qt .qt-trow.grand { color: var(--doc-text) !important; border-color: color-mix(in srgb, var(--doc-text) 20%, transparent) !important; }
+.qt .qt-validity { background: color-mix(in srgb, var(--doc-text) 5%, transparent); border-color: color-mix(in srgb, var(--doc-text) 10%, transparent); color: color-mix(in srgb, var(--doc-text) 45%, transparent); }
+.qt .qt-validity::before { background: color-mix(in srgb, var(--doc-text) 28%, transparent); }
+.qt .qt-notes { background: color-mix(in srgb, var(--doc-text) 4%, transparent); border-color: color-mix(in srgb, var(--doc-text) 8%, transparent); }
+.qt .qt-sig-line { border-color: color-mix(in srgb, var(--doc-text) 25%, transparent); }
+.qt .qt-sig-block > span, .qt .qt-sig-meta { color: color-mix(in srgb, var(--doc-text) 32%, transparent); }
+.qt .qt-table tbody tr { border-color: color-mix(in srgb, var(--doc-text) 7%, transparent); }
+.qt .qt-table thead tr { border-color: color-mix(in srgb, var(--doc-text) 20%, transparent); }
+.qt .qt-table .td-name { color: var(--doc-text) !important; }
+.qt .qt-footer b { color: color-mix(in srgb, var(--doc-text) 75%, transparent) !important; }
+
+
+/* Sections inside collapsible groups */
+.collapsible-body .section-title {
+  font-size: 8.5px;
+  letter-spacing: 0.15em;
+  color: rgba(240,240,235,0.2);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.collapsible-group {
+  border-bottom: 0.5px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 2px;
+}
+.collapsible-header .section-title {
+  font-size: 10px;
+  letter-spacing: 0.13em;
+}
+
 /* ── PRINT ── */
 @media print {
   * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -843,6 +929,37 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     padding: 12mm 14mm;
   }
 }
+
+/* ── COLLAPSIBLE SECTIONS ── */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 0;
+}
+.collapsible-arrow {
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform 0.22s ease;
+  flex-shrink: 0;
+  margin-left: 6px;
+  display: inline-block;
+}
+.collapsible-arrow.open { transform: rotate(180deg); }
+.collapsible-body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.22s ease;
+}
+.collapsible-body.open {
+  max-height: 3000px;
+  opacity: 1;
+  overflow: visible;
+}
+
 </style>
 </head>
 <body>
@@ -896,6 +1013,14 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <!-- EDIT TAB -->
     <div id="panel-edit">
 
+    <!-- GROUP: 外觀設定 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-appearance')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">外觀設定</div>
+        <span class="collapsible-arrow" id="arrow-group-appearance">▾</span>
+      </div>
+      <div class="collapsible-body" id="body-group-appearance">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 外觀設定 -->
     <div>
       <div class="section-title">外觀設定</div>
@@ -961,6 +1086,54 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
+    <!-- 字體設定 -->
+    <div>
+      <div class="section-title">字體</div>
+            <div class="font-grid" id="font-grid"></div>
+    </div>
+
+    <!-- 顏色設定 -->
+    <div>
+      <div class="section-title">顏色</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <label class="field-label" style="margin-bottom:6px;">背景色</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="color" id="color-bg" value="#0a0a0a" oninput="setDocColor('bg',this.value)"
+              style="width:32px;height:32px;padding:2px;border:0.5px solid var(--border-mid);border-radius:3px;background:var(--input-bg);cursor:pointer;flex-shrink:0;">
+            <div id="bg-swatches" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
+          </div>
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom:6px;">主色（文字）</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="color" id="color-text" value="#f5f5f0" oninput="setDocColor('text',this.value)"
+              style="width:32px;height:32px;padding:2px;border:0.5px solid var(--border-mid);border-radius:3px;background:var(--input-bg);cursor:pointer;flex-shrink:0;">
+            <div id="text-swatches" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
+          </div>
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom:6px;">快速配色</label>
+          <div id="combo-swatches" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
+        </div>
+        <button onclick="resetDocColors()"
+          style="font-size:10px;color:var(--muted);background:none;border:0.5px solid var(--border-mid);
+                 padding:5px 0;border-radius:3px;cursor:pointer;font-family:inherit;width:100%;">重設預設值</button>
+      </div>
+    </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 報價資訊 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-doc-info')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">報價資訊</div>
+        <span class="collapsible-arrow" id="arrow-group-doc-info">▾</span>
+      </div>
+      <div class="collapsible-body" id="body-group-doc-info">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 報價資訊 -->
     <div>
       <div class="section-title" id="sec-doc">報價資訊</div>
@@ -1003,6 +1176,18 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 報價方（我方） -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-from')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">報價方（我方）</div>
+        <span class="collapsible-arrow" id="arrow-group-from">▾</span>
+      </div>
+      <div class="collapsible-body" id="body-group-from">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 報價方 -->
     <div>
       <div class="section-title" id="sec-from">報價方（我方）</div>
@@ -1026,6 +1211,18 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 客戶資訊 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-to')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">客戶資訊</div>
+        <span class="collapsible-arrow open" id="arrow-group-to">▾</span>
+      </div>
+      <div class="collapsible-body open" id="body-group-to">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 客戶 -->
     <div>
       <div class="section-title" id="sec-to">客戶資訊</div>
@@ -1049,6 +1246,18 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 服務項目 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-items')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">服務項目</div>
+        <span class="collapsible-arrow open" id="arrow-group-items">▾</span>
+      </div>
+      <div class="collapsible-body open" id="body-group-items">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 服務項目 -->
     <div>
       <div class="section-title" id="sec-items">服務項目</div>
@@ -1122,6 +1331,37 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 備註 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-notes')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">備註</div>
+        <span class="collapsible-arrow" id="arrow-group-notes">▾</span>
+      </div>
+      <div class="collapsible-body" id="body-group-notes">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
+    <!-- 備註 -->
+    <div>
+      <div class="section-title" id="sec-notes">備註</div>
+      <textarea id="notes" oninput="markDirty('notes');update()" placeholder="付款條件、修改次數等條款...">· 正式委託後需支付 50% 訂金，餘款於最終交付後 7 個工作日內付清。
+· 修改次數：每項目含 2 次主要修改，超出部分另計。</textarea>
+    </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 頁面底部 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-footer')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">頁面底部</div>
+        <span class="collapsible-arrow" id="arrow-group-footer">▾</span>
+      </div>
+      <div class="collapsible-body" id="body-group-footer">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 聯絡方式 -->
     <div>
       <div class="section-title" id="sec-contact">聯絡方式（頁底）</div>
@@ -1170,11 +1410,8 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
-    <!-- 備註 -->
-    <div>
-      <div class="section-title" id="sec-notes">備註</div>
-      <textarea id="notes" oninput="markDirty('notes');update()" placeholder="付款條件、修改次數等條款...">· 正式委託後需支付 50% 訂金，餘款於最終交付後 7 個工作日內付清。
-· 修改次數：每項目含 2 次主要修改，超出部分另計。</textarea>
+        </div>
+      </div>
     </div>
 
     </div><!-- end panel-edit -->
@@ -1214,6 +1451,13 @@ function generateMd() {
 
   const lines = [
     '# LUXMIN 報價單設定',
+    '',
+    '## 外觀設定',
+    `- 主題: ${currentTheme}`,
+    `- 語言: ${currentLang}`,
+    `- 字體: ${currentFont ? currentFont.id : 'system'}`,
+    `- 背景色: ${docBg}`,
+    `- 主色: ${docText}`,
     '',
     '## 報價資訊',
     `- 文件標題: ${g('qt-doctitle').value}`,
@@ -1289,6 +1533,24 @@ function importMd() {
   function val(key) {
     const line = lines.find(l => l.startsWith(`- ${key}:`));
     return line ? line.slice(`- ${key}:`.length).trim() : null;
+  }
+
+  // 外觀設定
+  const importTheme = val('主題');
+  const importLang  = val('語言');
+  const importFont  = val('字體');
+  const importBg    = val('背景色');
+  const importText  = val('主色');
+
+  if (importTheme && importTheme !== currentTheme) setTheme(importTheme);
+  if (importLang  && importLang  !== currentLang)  setLang(importLang);
+  if (importFont) {
+    const found = getFonts().find(f => f.id === importFont);
+    if (found) { currentFont = found; }
+  }
+  if (importBg || importText) {
+    applyCombo(importBg || docBg, importText || docText);
+    renderColorPicker();
   }
 
   // scalar fields
@@ -1444,7 +1706,10 @@ function setTheme(theme) {
     document.getElementById('btn-light').style.cssText = 'flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;';
   }
   // swap logo — update() will re-render preview, so just track theme
-  update();
+  // reset colors to match new theme defaults
+  const defaults = getDefaultColors();
+  applyCombo(defaults.bg, defaults.text);
+  renderColorPicker();
 }
 
 
@@ -1618,6 +1883,7 @@ function setLang(lang) {
   // translate units and apply defaults for non-dirty fields, then re-render
   translateAllUnits(lang);
   applyDefaults(lang);
+  renderFontPicker();
   renderPanel();
   update();
   // re-sync enhanced select faces after lang change
@@ -1799,6 +2065,28 @@ document.addEventListener('click', function() {
   document.querySelectorAll('.eselect-wrap.open').forEach(w => w.classList.remove('open'));
 });
 
+
+// ── DROPDOWN OVERFLOW FIX ──
+function fixCollapsibleOverflow(el) {
+  let node = el.parentElement;
+  while (node) {
+    if (node.classList && node.classList.contains('collapsible-body')) {
+      node.style.overflow = 'visible';
+    }
+    node = node.parentElement;
+  }
+}
+function restoreCollapsibleOverflow() {
+  document.querySelectorAll('.collapsible-body.open').forEach(el => {
+    el.style.overflow = '';
+  });
+}
+// Close dropdowns + restore on outside click
+const _origOutsideClick = document.onclick;
+document.addEventListener('click', function() {
+  restoreCollapsibleOverflow();
+});
+
 // ── CUSTOM DROPDOWN ──
 document.addEventListener('click', function(e) {
   // close all dropdowns if clicking outside
@@ -1811,9 +2099,12 @@ function toggleUnitDropdown(idx) {
   const wrap = document.getElementById('unit-wrap-'+idx);
   const dd = wrap.querySelector('.unit-dropdown');
   const isOpen = dd.classList.contains('open');
-  // close all others first
   document.querySelectorAll('.unit-dropdown.open').forEach(d => d.classList.remove('open'));
-  if (!isOpen) dd.classList.add('open');
+  restoreCollapsibleOverflow();
+  if (!isOpen) {
+    dd.classList.add('open');
+    fixCollapsibleOverflow(wrap);
+  }
 }
 
 function selectUnit(idx, value) {
@@ -1856,6 +2147,166 @@ function translateUnit(unit, toLang) {
 
 function translateAllUnits(toLang) {
   items = items.map(it => ({ ...it, unit: translateUnit(it.unit, toLang) }));
+}
+
+
+const FONTS_EN = [
+  { id:'system',        label:'System',          sub:'Helvetica Neue',  family:"'Helvetica Neue',Helvetica,Arial,sans-serif", titleFamily:"'Helvetica Neue',Helvetica,sans-serif",  titleWeight:'700' },
+  { id:'inter',         label:'Inter',            sub:'Clean Sans',      family:"'Inter',sans-serif",                          titleFamily:"'Inter',sans-serif",                     titleWeight:'700' },
+  { id:'ibm-plex-sans', label:'IBM Plex Sans',    sub:'Technical Sans',  family:"'IBM Plex Sans',sans-serif",                  titleFamily:"'IBM Plex Sans',sans-serif",              titleWeight:'700' },
+  { id:'space-grotesk', label:'Space Grotesk',    sub:'Modern Sans',     family:"'Space Grotesk',sans-serif",                  titleFamily:"'Space Grotesk',sans-serif",              titleWeight:'700' },
+  { id:'dm-sans',       label:'DM Sans',          sub:'Rounded Sans',    family:"'DM Sans',sans-serif",                        titleFamily:"'DM Sans',sans-serif",                    titleWeight:'700' },
+  { id:'work-sans',     label:'Work Sans',        sub:'Versatile Sans',  family:"'Work Sans',sans-serif",                      titleFamily:"'Work Sans',sans-serif",                  titleWeight:'700' },
+  { id:'source-sans',   label:'Source Sans 3',    sub:'Readable Sans',   family:"'Source Sans 3',sans-serif",                  titleFamily:"'Source Sans 3',sans-serif",               titleWeight:'700' },
+  { id:'space-mono',    label:'Space Mono',        sub:'Monospace',       family:"'Space Mono',monospace",                      titleFamily:"'Space Mono',monospace",                  titleWeight:'700' },
+  { id:'cormorant',     label:'Cormorant',         sub:'Elegant Serif',  family:"'Cormorant Garamond',serif",                  titleFamily:"'Cormorant Garamond',serif",              titleWeight:'600' },
+  { id:'lora',          label:'Lora',              sub:'Literary Serif',  family:"'Lora',serif",                                titleFamily:"'Lora',serif",                            titleWeight:'700' },
+  { id:'source-serif',  label:'Source Serif 4',    sub:'Readable Serif',  family:"'Source Serif 4',serif",                      titleFamily:"'Source Serif 4',serif",                  titleWeight:'700' },
+  { id:'merriweather',  label:'Merriweather',      sub:'News Serif',      family:"'Merriweather',serif",                        titleFamily:"'Merriweather',serif",                    titleWeight:'700' },
+  { id:'libre-bask',    label:'Libre Baskerville', sub:'Classic Serif',   family:"'Libre Baskerville',serif",                   titleFamily:"'Libre Baskerville',serif",               titleWeight:'700' },
+];
+const FONTS_ZH = [
+  { id:'noto-sans-tc',   label:'Noto Sans TC',    sub:'思源黑體',      family:"'Noto Sans TC',sans-serif",          titleFamily:"'Noto Sans TC',sans-serif",          titleWeight:'700' },
+  { id:'noto-serif-tc',  label:'Noto Serif TC',   sub:'思源宋體',      family:"'Noto Serif TC',serif",              titleFamily:"'Noto Serif TC',serif",              titleWeight:'700' },
+  { id:'lxgw',           label:'霞鶩文楷',         sub:'LXGW WenKai',   family:"'LXGW WenKai TC',cursive",           titleFamily:"'LXGW WenKai TC',cursive",           titleWeight:'700' },
+  { id:'zen-mincho',     label:'Zen Old Mincho',  sub:'復古明朝體',    family:"'Zen Old Mincho',serif",             titleFamily:"'Zen Old Mincho',serif",             titleWeight:'700' },
+  { id:'kaisei',         label:'Kaisei Opti',     sub:'優雅明朝',      family:"'Kaisei Opti',serif",                titleFamily:"'Kaisei Opti',serif",                titleWeight:'700' },
+  { id:'shippori',       label:'Shippori Mincho', sub:'日式明朝',      family:"'Shippori Mincho',serif",            titleFamily:"'Shippori Mincho',serif",            titleWeight:'700' },
+  { id:'dela-gothic',    label:'Dela Gothic One', sub:'超粗黑標題',    family:"'Dela Gothic One',sans-serif",       titleFamily:"'Dela Gothic One',sans-serif",       titleWeight:'400' },
+  { id:'zen-kurenaido',  label:'Zen Kurenaido',   sub:'柔和手寫感',    family:"'Zen Kurenaido',sans-serif",         titleFamily:"'Zen Kurenaido',sans-serif",         titleWeight:'400' },
+];
+function getFonts() { return currentLang === 'zh' ? FONTS_ZH : FONTS_EN; }
+
+let currentFont = null;
+
+function setFont(id) {
+  currentFont = getFonts().find(f => f.id === id) || getFonts()[0];
+  document.querySelectorAll('.font-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.fontId === currentFont.id);
+  });
+  update();
+}
+
+function renderFontPicker() {
+  const fonts = getFonts();
+  if (!currentFont || !fonts.find(f => f.id === currentFont.id)) currentFont = fonts[0];
+  const grid = document.getElementById('font-grid');
+  if (!grid) return;
+  grid.innerHTML = fonts.map(f => `
+    <button class="font-btn${currentFont.id === f.id ? ' active' : ''}"
+      data-font-id="${f.id}" onclick="setFont('${f.id}')"
+      style="font-family:${f.titleFamily}">
+      <span class="font-btn-name" style="font-family:${f.titleFamily};font-weight:${f.titleWeight}">${f.label}</span>
+      <span class="font-btn-sub">${f.sub}</span>
+    </button>
+  `).join('');
+}
+
+
+// ── DOCUMENT COLOR SYSTEM ──
+const BG_PRESETS_DARK   = ['#0a0a0a','#1a1a2e','#1e293b','#2c2c2c','#0f172a','#1a0a0a','#0a1628','#141414','#1c1917','#0d1117'];
+const BG_PRESETS_LIGHT  = ['#ffffff','#f5f3ee','#fffdf7','#f0ede8','#e8e4dc','#f8f7f4','#fafaf8','#f3f0eb','#edeae4','#e4e0d8'];
+const TEXT_PRESETS_DARK  = ['#f5f5f0','#ffffff','#e2e8f0','#d4c5a9','#a0aec0','#f0e6d0','#ddd6c8','#c8c0b0','#b0a898','#e8e0d0'];
+const TEXT_PRESETS_LIGHT = ['#0a0a0a','#1a202c','#2d3748','#374151','#1e293b','#111111','#2c2c2c','#3d3d3d','#4a4a4a','#0f172a'];
+
+const COLOR_COMBOS_DARK = [
+  { bg:'#0a0a0a', text:'#f5f5f0', label:'黑白' },
+  { bg:'#1a1a2e', text:'#e2e8f0', label:'深藍' },
+  { bg:'#0f172a', text:'#d4c5a9', label:'夜金' },
+  { bg:'#1e293b', text:'#f5f5f0', label:'石板' },
+  { bg:'#2c2c2c', text:'#d4c5a9', label:'碳金' },
+  { bg:'#1c1917', text:'#e8e0d0', label:'深棕' },
+  { bg:'#0d1117', text:'#e2e8f0', label:'深灰藍' },
+  { bg:'#141414', text:'#f0e6d0', label:'純黑暖' },
+  { bg:'#1a0a0a', text:'#f5f5f0', label:'深紅黑' },
+  { bg:'#0a1628', text:'#d4c5a9', label:'深海金' },
+];
+
+const COLOR_COMBOS_LIGHT = [
+  { bg:'#ffffff', text:'#1a202c', label:'純白' },
+  { bg:'#f5f3ee', text:'#0a0a0a', label:'米白' },
+  { bg:'#fffdf7', text:'#374151', label:'奶油' },
+  { bg:'#f0ede8', text:'#2d3748', label:'暖白' },
+  { bg:'#e8e4dc', text:'#1e293b', label:'暖灰' },
+  { bg:'#fafaf8', text:'#111111', label:'冷白' },
+  { bg:'#f8f7f4', text:'#2c2c2c', label:'象牙' },
+  { bg:'#f3f0eb', text:'#3d3d3d', label:'米灰' },
+  { bg:'#edeae4', text:'#374151', label:'沙白' },
+  { bg:'#e4e0d8', text:'#1a202c', label:'石灰' },
+];
+
+function getBgPresets()    { return currentTheme === 'dark' ? BG_PRESETS_DARK   : BG_PRESETS_LIGHT; }
+function getTextPresets()  { return currentTheme === 'dark' ? TEXT_PRESETS_DARK  : TEXT_PRESETS_LIGHT; }
+function getColorCombos()  { return currentTheme === 'dark' ? COLOR_COMBOS_DARK  : COLOR_COMBOS_LIGHT; }
+
+function getDefaultColors() {
+  return currentTheme === 'dark'
+    ? { bg: '#0a0a0a', text: '#f5f5f0' }
+    : { bg: '#f5f3ee', text: '#0a0a0a' };
+}
+
+let docBg = '#f5f3ee', docText = '#0a0a0a';
+
+function setDocColor(type, value) {
+  if (type === 'bg')   { docBg   = value; const el = document.getElementById('color-bg');   if (el) el.value = value; }
+  if (type === 'text') { docText = value; const el = document.getElementById('color-text'); if (el) el.value = value; }
+  document.documentElement.style.setProperty('--doc-bg',   docBg);
+  document.documentElement.style.setProperty('--doc-text', docText);
+  document.querySelectorAll('.bg-swatch').forEach(s =>
+    Object.assign(s.style, { outline: s.dataset.color === docBg   ? '2px solid rgba(150,150,150,0.9)' : 'none', outlineOffset: '2px' }));
+  document.querySelectorAll('.text-swatch').forEach(s =>
+    Object.assign(s.style, { outline: s.dataset.color === docText ? '2px solid rgba(150,150,150,0.9)' : 'none', outlineOffset: '2px' }));
+  document.querySelectorAll('.combo-card').forEach(s =>
+    Object.assign(s.style, { outline: (s.dataset.bg === docBg && s.dataset.text === docText) ? '2px solid rgba(150,150,150,0.9)' : 'none', outlineOffset: '2px' }));
+  update();
+}
+
+function applyCombo(bg, text) { setDocColor('bg', bg); setDocColor('text', text); }
+function resetDocColors() { const d = getDefaultColors(); applyCombo(d.bg, d.text); }
+
+
+function renderColorPicker() {
+  const bgs    = getBgPresets();
+  const texts  = getTextPresets();
+  const combos = getColorCombos();
+
+  const bgWrap = document.getElementById('bg-swatches');
+  if (bgWrap) bgWrap.innerHTML = bgs.map(c =>
+    `<div class="bg-swatch" data-color="${c}" title="${c}" onclick="setDocColor('bg','${c}')"
+      style="width:20px;height:20px;border-radius:50%;background:${c};cursor:pointer;
+             border:0.5px solid rgba(128,128,128,0.3);flex-shrink:0;transition:transform 0.1s;outline-offset:2px;"
+      onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>`
+  ).join('');
+
+  const textWrap = document.getElementById('text-swatches');
+  if (textWrap) textWrap.innerHTML = texts.map(c =>
+    `<div class="text-swatch" data-color="${c}" title="${c}" onclick="setDocColor('text','${c}')"
+      style="width:20px;height:20px;border-radius:50%;background:${c};cursor:pointer;
+             border:0.5px solid rgba(128,128,128,0.3);flex-shrink:0;transition:transform 0.1s;outline-offset:2px;"
+      onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>`
+  ).join('');
+
+  const comboWrap = document.getElementById('combo-swatches');
+  if (comboWrap) comboWrap.innerHTML = combos.map(c =>
+    `<div class="combo-card" data-bg="${c.bg}" data-text="${c.text}" title="${c.label}"
+      onclick="applyCombo('${c.bg}','${c.text}')"
+      style="height:30px;border-radius:3px;background:${c.bg};cursor:pointer;
+             border:0.5px solid rgba(128,128,128,0.25);display:flex;align-items:center;
+             justify-content:center;font-size:9px;color:${c.text};font-weight:500;
+             transition:transform 0.1s;outline-offset:2px;"
+      onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">${c.label}</div>`
+  ).join('');
+}
+
+
+// ── COLLAPSIBLE GROUPS ──
+function toggleGroup(id) {
+  const body  = document.getElementById('body-' + id);
+  const arrow = document.getElementById('arrow-' + id);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
 // ── DEFAULT ITEMS ──
@@ -2023,11 +2474,15 @@ function update() {
     </tr>
   `).join('');
 
-  document.getElementById('preview').innerHTML = `
+  // Apply font to preview container
+  const previewEl = document.getElementById('preview');
+  previewEl.style.fontFamily = currentFont.family;
+
+  previewEl.innerHTML = `
     <div class="qt-header">
       <div id="qt-logo-wrap" style="line-height:0">${getLogoHTML(currentTheme)}</div>
       <div class="qt-title-block">
-        <div class="qt-title">${qtDocTitle}</div>
+        <div class="qt-title" style="font-family:${currentFont.titleFamily};font-weight:${currentFont.titleWeight};">${qtDocTitle}</div>
         <div class="qt-no">${qtNo}</div>
       </div>
     </div>
@@ -2120,6 +2575,9 @@ const expStr = expDate.getFullYear() + '-' + pad(expDate.getMonth()+1) + '-' + p
 g('qt-date').value = todayStr;
 g('qt-valid').value = expStr;
 
+renderFontPicker();
+const _initColors = getDefaultColors(); applyCombo(_initColors.bg, _initColors.text);
+renderColorPicker();
 renderPanel();
 update();
 enhanceSelects();
