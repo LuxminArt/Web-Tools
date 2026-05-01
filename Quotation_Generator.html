@@ -960,6 +960,121 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   overflow: visible;
 }
 
+
+/* ── CUSTOM DATE PICKER ── */
+.datepicker-wrap {
+  position: relative;
+  width: 100%;
+}
+.datepicker-face {
+  width: 100%;
+  background: var(--input-bg);
+  border: 0.5px solid var(--border-mid);
+  color: var(--text);
+  padding: 7px 32px 7px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  transition: border-color 0.15s;
+  position: relative;
+}
+.datepicker-face:hover { border-color: rgba(240,240,235,0.35); }
+.datepicker-face::after {
+  content: '▾';
+  position: absolute;
+  right: 10px;
+  font-size: 10px;
+  color: rgba(240,240,235,0.35);
+  transition: transform 0.15s;
+}
+.datepicker-wrap.open .datepicker-face::after { transform: rotate(180deg); }
+.datepicker-wrap.open .datepicker-face { border-color: rgba(240,240,235,0.35); }
+
+.datepicker-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  background: #1e1e1e;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 3px;
+  z-index: 9999;
+  width: 220px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  padding: 10px;
+}
+.datepicker-wrap.open .datepicker-popup { display: block; }
+
+.dp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.dp-nav-btn {
+  background: none;
+  border: none;
+  color: rgba(240,240,235,0.5);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: inherit;
+  transition: color 0.1s;
+}
+.dp-nav-btn:hover { color: var(--text); }
+.dp-month-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+.dp-weekday {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(240,240,235,0.3);
+  text-align: center;
+  padding: 2px 0;
+}
+.dp-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.dp-day {
+  font-size: 11px;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 2px;
+  cursor: pointer;
+  color: rgba(240,240,235,0.65);
+  transition: background 0.1s, color 0.1s;
+}
+.dp-day:hover { background: rgba(240,240,235,0.08); color: var(--text); }
+.dp-day.today { color: var(--text); font-weight: 600; }
+.dp-day.selected { background: rgba(240,240,235,0.15); color: var(--text); font-weight: 600; }
+.dp-day.other-month { color: rgba(240,240,235,0.2); }
+.dp-day.empty { cursor: default; }
+
+/* hide native date input but keep for form value */
+.datepicker-input-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0; height: 0;
+}
+
 </style>
 </head>
 <body>
@@ -984,8 +1099,21 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     </g>
 </svg>
   </div>
-  <span class="topbar-title">報價單產生器</span>
-  <button class="btn-print" onclick="window.print()">列印 / 匯出 PDF</button>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+    <span class="topbar-title">報價單產生器</span>
+    <span id="save-indicator" style="font-size:9px;letter-spacing:0.1em;color:rgba(240,240,235,0.35);opacity:0;transition:opacity 0.4s;">● 已儲存</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+    <button onclick="clearSavedState()"
+      style="background:none;border:0.5px solid var(--border-mid);color:var(--muted);
+             padding:6px 12px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit;
+             transition:all 0.15s;white-space:nowrap;"
+      onmouseover="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--text')"
+      onmouseout="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--muted')">
+      清除紀錄
+    </button>
+    <button class="btn-print" onclick="window.print()">列印 / 匯出 PDF</button>
+  </div>
 </div>
 
 <div class="workspace">
@@ -1149,11 +1277,23 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         <div class="field-row">
           <div>
             <label class="field-label" id="lbl-date">報價日期</label>
-            <input type="date" id="qt-date" oninput="update()">
+            <div class="datepicker-wrap" id="dp-wrap-qt-date">
+              <input type="hidden" id="qt-date" oninput="update()">
+              <div class="datepicker-face" onclick="toggleDatepicker('qt-date')">
+                <span id="dp-face-qt-date">選擇日期</span>
+              </div>
+              <div class="datepicker-popup" id="dp-popup-qt-date"></div>
+            </div>
           </div>
           <div>
             <label class="field-label" id="lbl-valid">有效期限</label>
-            <input type="date" id="qt-valid" oninput="update()">
+            <div class="datepicker-wrap" id="dp-wrap-qt-valid">
+              <input type="hidden" id="qt-valid" oninput="update()">
+              <div class="datepicker-face" onclick="toggleDatepicker('qt-valid')">
+                <span id="dp-face-qt-valid">選擇日期</span>
+              </div>
+              <div class="datepicker-popup" id="dp-popup-qt-valid"></div>
+            </div>
           </div>
         </div>
         <div>
@@ -2087,6 +2227,100 @@ document.addEventListener('click', function() {
   restoreCollapsibleOverflow();
 });
 
+
+// ── CUSTOM DATEPICKER ──
+const DP_STATE = {}; // { fieldId: { year, month } }
+const DP_WEEKDAYS_ZH = ['日','一','二','三','四','五','六'];
+const DP_WEEKDAYS_EN = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const DP_MONTHS_ZH = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DP_MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function dpGetWeekdays() { return currentLang === 'zh' ? DP_WEEKDAYS_ZH : DP_WEEKDAYS_EN; }
+function dpGetMonths()   { return currentLang === 'zh' ? DP_MONTHS_ZH   : DP_MONTHS_EN; }
+
+function toggleDatepicker(fieldId) {
+  const wrap  = document.getElementById('dp-wrap-' + fieldId);
+  const isOpen = wrap.classList.contains('open');
+  // close all
+  document.querySelectorAll('.datepicker-wrap.open').forEach(w => w.classList.remove('open'));
+  restoreCollapsibleOverflow();
+  if (!isOpen) {
+    const today = new Date();
+    const cur   = document.getElementById(fieldId).value;
+    const d     = cur ? new Date(cur + 'T00:00:00') : today;
+    DP_STATE[fieldId] = { year: d.getFullYear(), month: d.getMonth() };
+    renderDatepicker(fieldId);
+    wrap.classList.add('open');
+    fixCollapsibleOverflow(wrap);
+  }
+}
+
+function renderDatepicker(fieldId) {
+  const popup = document.getElementById('dp-popup-' + fieldId);
+  if (!popup) return;
+  const { year, month } = DP_STATE[fieldId];
+  const months = dpGetMonths();
+  const weekdays = dpGetWeekdays();
+  const today = new Date();
+  const selectedVal = document.getElementById(fieldId).value;
+  const sel = selectedVal ? new Date(selectedVal + 'T00:00:00') : null;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const label = currentLang === 'zh'
+    ? `${year}年 ${months[month]}`
+    : `${months[month]} ${year}`;
+
+  let daysHtml = '';
+  for (let i = 0; i < firstDay; i++) daysHtml += '<div class="dp-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday   = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    const isSel     = sel && d === sel.getDate() && month === sel.getMonth() && year === sel.getFullYear();
+    const cls = ['dp-day', isToday ? 'today' : '', isSel ? 'selected' : ''].filter(Boolean).join(' ');
+    daysHtml += `<div class="${cls}" onclick="event.stopPropagation();selectDate('${fieldId}',${year},${month+1},${d})">${d}</div>`;
+  }
+
+  popup.innerHTML = `
+    <div class="dp-nav">
+      <button class="dp-nav-btn" onclick="event.stopPropagation();dpShift('${fieldId}',-1)">‹</button>
+      <span class="dp-month-label">${label}</span>
+      <button class="dp-nav-btn" onclick="event.stopPropagation();dpShift('${fieldId}',1)">›</button>
+    </div>
+    <div class="dp-weekdays">${weekdays.map(w => `<div class="dp-weekday">${w}</div>`).join('')}</div>
+    <div class="dp-days">${daysHtml}</div>
+  `;
+}
+
+function dpShift(fieldId, delta) {
+  const s = DP_STATE[fieldId];
+  s.month += delta;
+  if (s.month > 11) { s.month = 0;  s.year++; }
+  if (s.month < 0)  { s.month = 11; s.year--; }
+  renderDatepicker(fieldId);
+}
+
+function selectDate(fieldId, year, month, day) {
+  const pad = n => String(n).padStart(2,'0');
+  const val = `${year}-${pad(month)}-${pad(day)}`;
+  const el  = document.getElementById(fieldId);
+  el.value  = val;
+  // update face display
+  const face = document.getElementById('dp-face-' + fieldId);
+  if (face) face.textContent = fmtDate(val);
+  // close popup
+  const wrap = document.getElementById('dp-wrap-' + fieldId);
+  if (wrap) wrap.classList.remove('open');
+  restoreCollapsibleOverflow();
+  el.dispatchEvent(new Event('input'));
+}
+
+// close on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.datepicker-wrap') && !e.target.closest('.datepicker-popup')) {
+    document.querySelectorAll('.datepicker-wrap.open').forEach(w => w.classList.remove('open'));
+  }
+});
+
 // ── CUSTOM DROPDOWN ──
 document.addEventListener('click', function(e) {
   // close all dropdowns if clicking outside
@@ -2307,6 +2541,142 @@ function toggleGroup(id) {
   const isOpen = body.classList.contains('open');
   body.classList.toggle('open', !isOpen);
   if (arrow) arrow.classList.toggle('open', !isOpen);
+}
+
+
+// ── LOCALSTORAGE AUTOSAVE ──
+const LS_KEY = 'luxmin_qg_state';
+let saveTimer = null;
+
+function collectState() {
+  return {
+    // 外觀
+    theme:    currentTheme,
+    lang:     currentLang,
+    fontId:   currentFont ? currentFont.id : 'system',
+    docBg:    docBg,
+    docText:  docText,
+    // 報價資訊
+    doctitle: g('qt-doctitle').value,
+    qtno:     g('qt-no').value,
+    qtdate:   g('qt-date').value,
+    qtvalid:  g('qt-valid').value,
+    currency: g('qt-currency').value,
+    // 報價方
+    fromName:  g('from-name').value,
+    fromEmail: g('from-email').value,
+    fromPhone: g('from-phone').value,
+    fromAddr:  g('from-addr').value,
+    // 客戶
+    toName:    g('to-name').value,
+    toContact: g('to-contact').value,
+    toEmail:   g('to-email').value,
+    toAddr:    g('to-addr').value,
+    // 項目
+    items: items.map(it => ({ ...it })),
+    // 稅率折扣
+    taxRate:    g('tax-rate').value,
+    discType:   g('disc-type').value,
+    discVal:    g('disc-val').value,
+    payTerms:   g('pay-terms').value,
+    payCustom:  g('pay-terms-custom').value,
+    // 頁底
+    contact1:  g('contact-line1').value,
+    contact2:  g('contact-line2').value,
+    contact3:  g('contact-line3').value,
+    notes:     g('notes').value,
+    legalText: g('legal-text').value,
+    bankName:  g('bank-name').value,
+    bankAcct:  g('bank-acct').value,
+    bankHolder:g('bank-holder').value,
+    bankSwift: g('bank-swift').value,
+    // 日期面板顯示
+    dpFaceDate:  document.getElementById('dp-face-qt-date')  ? document.getElementById('dp-face-qt-date').textContent  : '',
+    dpFaceValid: document.getElementById('dp-face-qt-valid') ? document.getElementById('dp-face-qt-valid').textContent : '',
+    // dirty set
+    dirty: [...dirtyFields],
+  };
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(collectState()));
+      showSaveIndicator();
+    } catch(e) { console.warn('Autosave failed:', e); }
+  }, 1000);
+}
+
+function showSaveIndicator() {
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 1800);
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+
+    // 外觀
+    if (s.theme && s.theme !== currentTheme) setTheme(s.theme);
+    if (s.lang  && s.lang  !== currentLang)  setLang(s.lang);
+    if (s.fontId) {
+      const found = getFonts().find(f => f.id === s.fontId);
+      if (found) { currentFont = found; }
+    }
+    if (s.docBg || s.docText) applyCombo(s.docBg || docBg, s.docText || docText);
+
+    // 欄位
+    const fieldMap = {
+      doctitle:'qt-doctitle', qtno:'qt-no', qtdate:'qt-date', qtvalid:'qt-valid',
+      currency:'qt-currency',
+      fromName:'from-name', fromEmail:'from-email', fromPhone:'from-phone', fromAddr:'from-addr',
+      toName:'to-name', toContact:'to-contact', toEmail:'to-email', toAddr:'to-addr',
+      taxRate:'tax-rate', discType:'disc-type', discVal:'disc-val',
+      payTerms:'pay-terms', payCustom:'pay-terms-custom',
+      contact1:'contact-line1', contact2:'contact-line2', contact3:'contact-line3',
+      notes:'notes', legalText:'legal-text',
+      bankName:'bank-name', bankAcct:'bank-acct', bankHolder:'bank-holder', bankSwift:'bank-swift',
+    };
+    for (const [key, id] of Object.entries(fieldMap)) {
+      if (s[key] !== undefined) {
+        const el = g(id);
+        if (el) el.value = s[key];
+      }
+    }
+
+    // 日期面板顯示
+    if (s.dpFaceDate)  { const el = document.getElementById('dp-face-qt-date');  if (el) el.textContent = s.dpFaceDate; }
+    if (s.dpFaceValid) { const el = document.getElementById('dp-face-qt-valid'); if (el) el.textContent = s.dpFaceValid; }
+
+    // 項目
+    if (s.items && Array.isArray(s.items)) items = s.items;
+
+    // dirty set
+    if (s.dirty && Array.isArray(s.dirty)) s.dirty.forEach(id => dirtyFields.add(id));
+
+    // 付款條件自訂顯示
+    if (s.payTerms === 'custom') {
+      const wrap = document.getElementById('pay-terms-custom-wrap');
+      if (wrap) wrap.style.display = 'block';
+    }
+
+    return true;
+  } catch(e) {
+    console.warn('Restore failed:', e);
+    return false;
+  }
+}
+
+function clearSavedState() {
+  const msg = '⚠️ 清除後無法復原\n\n這將刪除所有填寫內容與外觀設定（主題、字體、顏色等）。\n\n建議先切換到「文字」Tab，複製並保存當前設定後再繼續。\n\n確定要清除嗎？';
+  if (!confirm(msg)) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
 }
 
 // ── DEFAULT ITEMS ──
@@ -2574,6 +2944,11 @@ const expDate = new Date(today); expDate.setDate(expDate.getDate()+30);
 const expStr = expDate.getFullYear() + '-' + pad(expDate.getMonth()+1) + '-' + pad(expDate.getDate());
 g('qt-date').value = todayStr;
 g('qt-valid').value = expStr;
+// init face labels
+const dpFaceDate = document.getElementById('dp-face-qt-date');
+if (dpFaceDate) dpFaceDate.textContent = fmtDate(todayStr);
+const dpFaceValid = document.getElementById('dp-face-qt-valid');
+if (dpFaceValid) dpFaceValid.textContent = fmtDate(expStr);
 
 renderFontPicker();
 const _initColors = getDefaultColors(); applyCombo(_initColors.bg, _initColors.text);
