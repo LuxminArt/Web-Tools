@@ -907,6 +907,65 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   letter-spacing: 0.13em;
 }
 
+
+/* ── ITEM ROW LAYOUT (v2) ── */
+.item-name-row { margin-bottom: 7px; }
+.item-pqu-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 1.1fr;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+.item-desc-row { margin-top: 2px; }
+.item-desc-textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 0.5px solid var(--border);
+  color: rgba(240,240,235,0.7);
+  padding: 7px 9px;
+  font-size: 11px;
+  font-family: inherit;
+  line-height: 1.6;
+  border-radius: 3px;
+  outline: none;
+  resize: vertical;
+  min-height: 38px;
+  transition: border-color 0.15s;
+}
+.item-desc-textarea:focus { border-color: rgba(240,240,235,0.35); }
+
+
+/* ── ITEM DRAG REORDER ── */
+.item-row { position: relative; }
+.item-drag-handle {
+  position: absolute;
+  top: 10px; left: 8px;
+  width: 16px; height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: rgba(240,240,235,0.25);
+  font-size: 12px;
+  line-height: 1;
+  user-select: none;
+  transition: color 0.15s;
+  z-index: 2;
+}
+.item-drag-handle:hover { color: rgba(240,240,235,0.6); }
+.item-drag-handle:active { cursor: grabbing; }
+.item-row.dragging {
+  opacity: 0.4;
+  border-color: rgba(240,240,235,0.4);
+}
+.item-row.drag-over-top { box-shadow: 0 -2px 0 rgba(240,240,235,0.5); }
+.item-row.drag-over-bottom { box-shadow: 0 2px 0 rgba(240,240,235,0.5); }
+/* shift content right to make room for handle */
+.item-row .item-name-row,
+.item-row .item-pqu-grid,
+.item-row .item-desc-row,
+.item-row .item-subtotal { padding-left: 18px; }
+
 /* ── PRINT ── */
 @media print {
   * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -1006,6 +1065,11 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   width: 220px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.55);
   padding: 10px;
+}
+/* right-column date pickers open leftward to stay in bounds */
+#dp-popup-qt-valid {
+  left: auto;
+  right: 0;
 }
 .datepicker-wrap.open .datepicker-popup { display: block; }
 
@@ -1135,15 +1199,32 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <span id="save-indicator" style="font-size:9px;letter-spacing:0.08em;color:rgba(240,240,235,0.45);opacity:0;transition:opacity 0.35s;display:flex;align-items:center;"></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+    <button onclick="downloadJSON()"
+      style="background:none;border:0.5px solid var(--border-mid);color:var(--muted);
+             padding:6px 12px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit;
+             transition:all 0.15s;white-space:nowrap;"
+      onmouseover="this.style.color='#f0f0eb'"
+      onmouseout="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--muted')">
+      ↓ 下載備份
+    </button>
+    <button onclick="document.getElementById('json-upload').click()"
+      style="background:none;border:0.5px solid var(--border-mid);color:var(--muted);
+             padding:6px 12px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit;
+             transition:all 0.15s;white-space:nowrap;"
+      onmouseover="this.style.color='#f0f0eb'"
+      onmouseout="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--muted')">
+      ↑ 載入備份
+    </button>
+    <input type="file" id="json-upload" accept="application/json,.json" style="display:none" onchange="uploadJSON(event)">
     <button onclick="clearSavedState()"
       style="background:none;border:0.5px solid var(--border-mid);color:var(--muted);
              padding:6px 12px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit;
              transition:all 0.15s;white-space:nowrap;"
-      onmouseover="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--text')"
+      onmouseover="this.style.color='#f0f0eb'"
       onmouseout="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--muted')">
       清除紀錄
     </button>
-    <button class="btn-print" onclick="window.print()">列印 / 匯出 PDF</button>
+    <button class="btn-print" onclick="printDocument()">列印 / 匯出 PDF</button>
   </div>
 </div>
 
@@ -1160,11 +1241,10 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
     <!-- TEXT TAB -->
     <div id="panel-text">
-      <div class="md-hint">所有欄位內容以純文字顯示，全選複製後可存入 Notes 備用。下次貼上後點「匯入」即可還原所有欄位。</div>
-      <textarea class="md-textarea" id="md-export" spellcheck="false" placeholder="切換到此頁時自動產生..."></textarea>
+      <div class="md-hint">目前內容的純文字檢視，方便快速查看或貼給同事溝通。<br>完整備份與還原請使用上方的「↓ 下載備份」／「↑ 載入備份」。</div>
+      <textarea class="md-textarea" id="md-export" spellcheck="false" readonly placeholder="切換到此頁時自動產生..."></textarea>
       <div class="md-actions">
         <button class="md-btn md-btn-copy" onclick="copyMd()">全選複製</button>
-        <button class="md-btn md-btn-import" onclick="importMd()">貼入匯入</button>
       </div>
       <div class="md-copy-confirm" id="md-confirm"></div>
     </div>
@@ -1407,6 +1487,10 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
           <input type="text" id="to-contact" oninput="markDirty('to-contact');update()" placeholder="聯絡人姓名">
         </div>
         <div>
+          <label class="field-label" id="lbl-to-phone">電話</label>
+          <input type="text" id="to-phone" oninput="markDirty('to-phone');update()" placeholder="客戶電話">
+        </div>
+        <div>
           <label class="field-label" id="lbl-to-email">電子信箱</label>
           <input type="text" id="to-email" oninput="markDirty('to-email');update()" placeholder="client@email.com">
         </div>
@@ -1646,6 +1730,7 @@ function generateMd() {
     '## 客戶',
     `- 公司/姓名: ${g('to-name').value}`,
     `- 聯絡人: ${g('to-contact').value}`,
+    `- 客戶電話: ${g('to-phone').value}`,
     `- 電子信箱: ${g('to-email').value}`,
     `- 地址: ${g('to-addr').value}`,
     '',
@@ -1693,118 +1778,6 @@ function copyMd() {
   setTimeout(() => conf.textContent = '', 2000);
 }
 
-function importMd() {
-  const text = document.getElementById('md-export').value;
-  if (!text.trim()) {
-    alert('請先貼上文字內容，再點匯入');
-    return;
-  }
-  const lines = text.split('\n');
-
-  function val(key) {
-    const line = lines.find(l => l.startsWith(`- ${key}:`));
-    return line ? line.slice(`- ${key}:`.length).trim() : null;
-  }
-
-  // 外觀設定
-  const importTheme = val('主題');
-  const importLang  = val('語言');
-  const importFont  = val('字體');
-  const importBg    = val('背景色');
-  const importText  = val('主色');
-
-  if (importTheme && importTheme !== currentTheme) setTheme(importTheme);
-  if (importLang  && importLang  !== currentLang)  setLang(importLang);
-  if (importFont) {
-    const found = getFonts().find(f => f.id === importFont);
-    if (found) { currentFont = found; }
-  }
-  if (importBg || importText) {
-    applyCombo(importBg || docBg, importText || docText);
-    renderColorPicker();
-  }
-
-  // scalar fields
-  const fieldMap = {
-    '文件標題': 'qt-doctitle', '文件編號': 'qt-no',
-    '報價日期': 'qt-date', '有效期限': 'qt-valid', '幣別': 'qt-currency',
-    '公司名稱': 'from-name', '電子信箱': 'from-email',
-    '電話': 'from-phone', '地址': 'from-addr',
-    '公司/姓名': 'to-name', '聯絡人': 'to-contact',
-  };
-  // second email/addr for to- block
-  const toEmailLine = lines.find((l,i) => l.startsWith('- 電子信箱:') && lines.slice(0,i).join('').includes('## 客戶'));
-  const toAddrLine  = lines.find((l,i) => l.startsWith('- 地址:') && lines.slice(0,i).join('').includes('## 客戶'));
-
-  for (const [key, id] of Object.entries(fieldMap)) {
-    const v = val(key);
-    if (v !== null) { const el = g(id); if (el) { el.value = v; markDirty(id); } }
-  }
-
-  // to- fields need section-aware lookup
-  if (toEmailLine) { const v = toEmailLine.split(':').slice(1).join(':').trim(); if (v) { g('to-email').value = v; markDirty('to-email'); } }
-  if (toAddrLine)  { const v = toAddrLine.split(':').slice(1).join(':').trim();  if (v) { g('to-addr').value = v;  markDirty('to-addr');  } }
-
-  // numeric/select fields
-  const tv = val('稅率'); if (tv !== null) g('tax-rate').value = tv;
-  const dt = val('折扣類型'); if (dt !== null) g('disc-type').value = dt;
-  const dv = val('折扣數值'); if (dv !== null) g('disc-val').value = dv;
-  const pt = val('付款條件'); if (pt !== null) g('pay-terms').value = pt;
-  const pc = val('自訂付款條件'); if (pc !== null) { g('pay-terms-custom').value = pc; markDirty('pay-terms-custom'); }
-  const cu = val('幣別'); if (cu !== null) g('qt-currency').value = cu;
-
-  // bank
-  const bmap = {'銀行':'bank-name','帳號':'bank-acct','戶名':'bank-holder','SWIFT':'bank-swift'};
-  for (const [k,id] of Object.entries(bmap)) {
-    const v = val(k); if (v !== null) { g(id).value = v; markDirty(id); }
-  }
-
-  // contact
-  const c1 = val('第一行'); if (c1!==null) { g('contact-line1').value=c1; markDirty('contact-line1'); }
-  const c2 = val('第二行'); if (c2!==null) { g('contact-line2').value=c2; markDirty('contact-line2'); }
-  const c3 = val('第三行'); if (c3!==null) { g('contact-line3').value=c3; markDirty('contact-line3'); }
-
-  // notes & legal — multiline, grab everything after the heading until next ##
-  function extractSection(heading) {
-    const start = lines.findIndex(l => l.trim() === `## ${heading}`);
-    if (start < 0) return null;
-    const end = lines.findIndex((l,i) => i > start && l.startsWith('## '));
-    const block = (end > 0 ? lines.slice(start+1, end) : lines.slice(start+1))
-      .filter(l => !l.startsWith('-') || true).join('\n').trim();
-    return block;
-  }
-  const notes = extractSection('備註');     if (notes)  { g('notes').value = notes;      markDirty('notes'); }
-  const legal = extractSection('法律聲明'); if (legal)  { g('legal-text').value = legal; markDirty('legal-text'); }
-
-  // items
-  const itemLines = lines.filter(l => /^- 項目\d+:/.test(l));
-  if (itemLines.length > 0) {
-    items = itemLines.map(l => {
-      const parts = l.replace(/^- 項目\d+: /, '').split(' | ');
-      const get = (prefix) => { const p = parts.find(x => x.startsWith(prefix+': ')); return p ? p.slice(prefix.length+2) : ''; };
-      return {
-        name: parts[0] || '',
-        price: parseFloat(get('單價')) || 0,
-        qty: parseInt(get('數量')) || 1,
-        unit: get('單位') || '式',
-        desc: get('說明') || ''
-      };
-    });
-  }
-
-  // re-enhance selects after import
-  document.querySelectorAll('.eselect-wrap').forEach(w => {
-    const sel = w.querySelector('select');
-    const face = w.querySelector('.eselect-face');
-    if (sel && face) face.textContent = sel.options[sel.selectedIndex]?.text || '';
-  });
-
-  renderPanel();
-  update();
-  switchTab('edit');
-  document.getElementById('md-confirm').textContent = '✓ 匯入完成';
-  setTimeout(() => document.getElementById('md-confirm').textContent = '', 2000);
-}
 
 
 // ── LOGO UPLOAD ──
@@ -1906,6 +1879,7 @@ const T = {
     fromAddrLbl:   '地址',
     toNameLbl:     '公司／姓名',
     toContactLbl:  '聯絡人',
+    toPhoneLbl:    '電話',
     toEmailLbl:    '電子信箱',
     toAddrLbl:     '地址',
     taxRateLbl:    '營業稅率 (%)',
@@ -1967,6 +1941,7 @@ const T = {
     fromAddrLbl:   'Address',
     toNameLbl:     'Company / Name',
     toContactLbl:  'Contact Person',
+    toPhoneLbl:    'Phone',
     toEmailLbl:    'Email',
     toAddrLbl:     'Address',
     taxRateLbl:    'Tax Rate (%)',
@@ -2575,18 +2550,131 @@ function toggleGroup(id) {
 }
 
 
+
+
+// ── PRINT WITH DYNAMIC FILENAME ──
+function buildFileBaseName() {
+  const docTitle = (g('qt-doctitle').value || 'quotation').replace(/[\\/:*?"<>|]/g, '_');
+  const qtNo = (g('qt-no').value || '').replace(/[\\/:*?"<>|]/g, '_');
+  const dateStr = new Date().toISOString().slice(0,10);
+  return `${docTitle}${qtNo ? '_'+qtNo : ''}_${dateStr}`;
+}
+
+function printDocument() {
+  const originalTitle = document.title;
+  document.title = buildFileBaseName();
+  window.print();
+  // restore after print dialog closes
+  setTimeout(() => { document.title = originalTitle; }, 500);
+}
+
+// ── JSON BACKUP / RESTORE ──
+function downloadJSON() {
+  const state = collectState();
+  const filename = buildFileBaseName() + '.json';
+
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function uploadJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const s = JSON.parse(e.target.result);
+      if (s._version && parseFloat(s._version) > 2.0) {
+        if (!confirm('此備份檔來自較新版本，部分設定可能無法完整還原。仍要繼續嗎？')) return;
+      }
+      applyState(s);
+      event.target.value = '';
+    } catch(err) {
+      alert('檔案格式錯誤，請確認是有效的備份檔（.json）');
+      console.warn('JSON parse error:', err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Shared state-applier used by both restoreState() and uploadJSON()
+function applyState(s) {
+  if (!s) return;
+  // 外觀
+  if (s.theme && s.theme !== currentTheme) setTheme(s.theme);
+  if (s.lang  && s.lang  !== currentLang)  setLang(s.lang);
+  if (s.fontId) {
+    const found = getFonts().find(f => f.id === s.fontId);
+    if (found) currentFont = found;
+  }
+  if (s.docBg || s.docText) applyCombo(s.docBg || docBg, s.docText || docText);
+
+  // restore custom logos
+  if (s.logoDark) { customLogoDark = s.logoDark; updateLogoThumb('dark', s.logoDark, '已載入'); }
+  if (s.logoLight) { customLogoLight = s.logoLight; updateLogoThumb('light', s.logoLight, '已載入'); }
+
+  const fieldMap = {
+    doctitle:'qt-doctitle', qtno:'qt-no', qtdate:'qt-date', qtvalid:'qt-valid',
+    currency:'qt-currency',
+    fromName:'from-name', fromEmail:'from-email', fromPhone:'from-phone', fromAddr:'from-addr',
+    toName:'to-name', toContact:'to-contact', toPhone:'to-phone', toEmail:'to-email', toAddr:'to-addr',
+    taxRate:'tax-rate', discType:'disc-type', discVal:'disc-val',
+    payTerms:'pay-terms', payCustom:'pay-terms-custom',
+    contact1:'contact-line1', contact2:'contact-line2', contact3:'contact-line3',
+    notes:'notes', legalText:'legal-text',
+    bankName:'bank-name', bankAcct:'bank-acct', bankHolder:'bank-holder', bankSwift:'bank-swift',
+  };
+  for (const [key, id] of Object.entries(fieldMap)) {
+    if (s[key] !== undefined) { const el = g(id); if (el) el.value = s[key]; }
+  }
+
+  if (s.items && Array.isArray(s.items)) items = s.items.map(it => ({ ...it }));
+  if (s.dirty && Array.isArray(s.dirty)) s.dirty.forEach(id => dirtyFields.add(id));
+
+  if (s.payTerms === 'custom') {
+    const wrap = document.getElementById('pay-terms-custom-wrap');
+    if (wrap) wrap.style.display = 'block';
+  }
+
+  // re-render everything
+  renderFontPicker();
+  renderColorPicker();
+  renderPanel();
+  update();
+
+  // sync enhanced selects + date faces
+  document.querySelectorAll('.eselect-wrap').forEach(wrap => {
+    const sel = wrap.querySelector('select');
+    const face = wrap.querySelector('.eselect-face');
+    if (sel && face) face.textContent = sel.options[sel.selectedIndex]?.text || '';
+  });
+  const _fd = document.getElementById('dp-face-qt-date');
+  const _fv = document.getElementById('dp-face-qt-valid');
+  if (_fd && g('qt-date').value)  _fd.textContent = fmtDate(g('qt-date').value);
+  if (_fv && g('qt-valid').value) _fv.textContent = fmtDate(g('qt-valid').value);
+}
+
 // ── LOCALSTORAGE AUTOSAVE ──
 const LS_KEY = 'luxmin_qg_state';
 let saveTimer = null;
 
 function collectState() {
   return {
+    _version: '2.0',
+    _app: 'LUXMIN Quotation Generator',
     // 外觀
     theme:    currentTheme,
     lang:     currentLang,
     fontId:   currentFont ? currentFont.id : 'system',
     docBg:    docBg,
     docText:  docText,
+    logoDark:  customLogoDark,
+    logoLight: customLogoLight,
     // 報價資訊
     doctitle: g('qt-doctitle').value,
     qtno:     g('qt-no').value,
@@ -2601,6 +2689,7 @@ function collectState() {
     // 客戶
     toName:    g('to-name').value,
     toContact: g('to-contact').value,
+    toPhone:   g('to-phone').value,
     toEmail:   g('to-email').value,
     toAddr:    g('to-addr').value,
     // 項目
@@ -2673,12 +2762,16 @@ function restoreState() {
     }
     if (s.docBg || s.docText) applyCombo(s.docBg || docBg, s.docText || docText);
 
+    // 自訂 Logo
+    if (s.logoDark)  { customLogoDark  = s.logoDark;  updateLogoThumb('dark',  s.logoDark,  '已載入'); }
+    if (s.logoLight) { customLogoLight = s.logoLight; updateLogoThumb('light', s.logoLight, '已載入'); }
+
     // 欄位
     const fieldMap = {
       doctitle:'qt-doctitle', qtno:'qt-no', qtdate:'qt-date', qtvalid:'qt-valid',
       currency:'qt-currency',
       fromName:'from-name', fromEmail:'from-email', fromPhone:'from-phone', fromAddr:'from-addr',
-      toName:'to-name', toContact:'to-contact', toEmail:'to-email', toAddr:'to-addr',
+      toName:'to-name', toContact:'to-contact', toPhone:'to-phone', toEmail:'to-email', toAddr:'to-addr',
       taxRate:'tax-rate', discType:'disc-type', discVal:'disc-val',
       payTerms:'pay-terms', payCustom:'pay-terms-custom',
       contact1:'contact-line1', contact2:'contact-line2', contact3:'contact-line3',
@@ -2720,6 +2813,66 @@ function clearSavedState() {
   if (!confirm(msg)) return;
   localStorage.removeItem(LS_KEY);
   location.reload();
+}
+
+
+
+// ── ITEM DRAG REORDER ──
+let dragSrcIdx = null;
+
+function itemDragStart(e, idx) {
+  dragSrcIdx = idx;
+  const row = e.target.closest('.item-row');
+  if (row) setTimeout(() => row.classList.add('dragging'), 0);
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', String(idx));
+}
+
+function itemDragEnd(e) {
+  document.querySelectorAll('.item-row').forEach(r => {
+    r.classList.remove('dragging','drag-over-top','drag-over-bottom');
+  });
+  dragSrcIdx = null;
+}
+
+function itemDragOver(e, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  if (dragSrcIdx === null || dragSrcIdx === idx) return;
+  const row = e.currentTarget;
+  const rect = row.getBoundingClientRect();
+  const after = e.clientY > rect.top + rect.height / 2;
+  row.classList.remove('drag-over-top','drag-over-bottom');
+  row.classList.add(after ? 'drag-over-bottom' : 'drag-over-top');
+}
+
+function itemDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over-top','drag-over-bottom');
+}
+
+function itemDrop(e, idx) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === idx) return;
+  const row = e.currentTarget;
+  const rect = row.getBoundingClientRect();
+  const after = e.clientY > rect.top + rect.height / 2;
+  let targetIdx = after ? idx + 1 : idx;
+
+  const moved = items[dragSrcIdx];
+  items.splice(dragSrcIdx, 1);
+  // adjust target index if removal shifted it
+  if (dragSrcIdx < targetIdx) targetIdx--;
+  items.splice(targetIdx, 0, moved);
+
+  dragSrcIdx = null;
+  renderPanel();
+  update();
+}
+
+// ── TEXTAREA AUTO-GROW ──
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
 }
 
 // ── DEFAULT ITEMS ──
@@ -2767,14 +2920,21 @@ function removeItem(i) {
 function renderPanel() {
   const list = document.getElementById('items-list');
   list.innerHTML = items.map((it, i) => `
-    <div class="item-row">
+    <div class="item-row" draggable="false" data-idx="${i}"
+      ondragover="itemDragOver(event,${i})" ondrop="itemDrop(event,${i})"
+      ondragleave="itemDragLeave(event)">
+      <div class="item-drag-handle" draggable="true"
+        ondragstart="itemDragStart(event,${i})" ondragend="itemDragEnd(event)"
+        title="拖曳排序">⠿</div>
       <button class="btn-remove" onclick="removeItem(${i})">×</button>
-      <div class="item-grid">
-        <div>
-          <label class="field-label">${T[currentLang].itemNameLbl}</label>
-          <input type="text" value="${esc(it.name)}" placeholder="${T[currentLang].itemNameLbl}"
-            oninput="items[${i}].name=this.value;update()">
-        </div>
+
+      <div class="item-name-row">
+        <label class="field-label">${T[currentLang].itemNameLbl}</label>
+        <input type="text" value="${esc(it.name)}" placeholder="${T[currentLang].itemNameLbl}"
+          oninput="items[${i}].name=this.value;update()">
+      </div>
+
+      <div class="item-pqu-grid">
         <div>
           <label class="field-label">${T[currentLang].itemPriceLbl}</label>
           <input type="number" value="${it.price}" min="0"
@@ -2805,13 +2965,18 @@ function renderPanel() {
           </div>
         </div>
       </div>
-      <div class="item-desc">
-        <input type="text" value="${esc(it.desc)}" placeholder="${T[currentLang].itemDescLbl}"
-          oninput="items[${i}].desc=this.value;update()">
+
+      <div class="item-desc-row">
+        <label class="field-label">${T[currentLang].itemDescLbl}</label>
+        <textarea class="item-desc-textarea" rows="2" placeholder="${currentLang==='zh'?'可多行輸入，每行開頭可用 ・ 或 - 做條列':'multi-line; use ・ or - for bullets'}"
+          oninput="items[${i}].desc=this.value;autoGrow(this);update()">${esc(it.desc)}</textarea>
       </div>
+
       <div class="item-subtotal">${T[currentLang].itemSubtotal(currencySymbolMap[g('qt-currency').value]||g('qt-currency').value, fmt(it.price * it.qty))}</div>
     </div>
   `).join('');
+  // auto-grow desc textareas to fit content
+  document.querySelectorAll('.item-desc-textarea').forEach(autoGrow);
 }
 
 function esc(s) {
@@ -2850,9 +3015,10 @@ function update() {
 
   const toName = g('to-name').value || '[客戶名稱]';
   const toContact = g('to-contact').value;
+  const toPhone = g('to-phone').value;
   const toEmail = g('to-email').value;
   const toAddr = g('to-addr').value;
-  const toLines = [toContact, toEmail, toAddr].filter(Boolean).join('<br>');
+  const toLines = [toContact, toPhone, toEmail, toAddr].filter(Boolean).join('<br>');
 
   const fromName = g('from-name').value;
   const fromEmail = g('from-email').value;
@@ -2878,7 +3044,7 @@ function update() {
     <tr>
       <td>
         <div class="td-name">${it.name || '（未命名）'}</div>
-        ${it.desc ? '<div class="td-desc">' + it.desc + '</div>' : ''}
+        ${it.desc ? '<div class="td-desc">' + esc(it.desc).replace(/\n/g,'<br>') + '</div>' : ''}
       </td>
       <td class="r">${fmt(it.price)}</td>
       <td class="r">${it.qty}</td>
@@ -2948,11 +3114,11 @@ function update() {
     ${showSignature ? `
     <div class="qt-signature-section">
       <div class="qt-sig-block">
-        <span>${T[currentLang].pvSigClient}</span>
+        <span>${T[currentLang].pvSigAuth}</span>
         <div class="qt-sig-line"></div>
       </div>
       <div class="qt-sig-block">
-        <span>${T[currentLang].pvSigAuth}</span>
+        <span>${T[currentLang].pvSigClient}</span>
         <div class="qt-sig-line"></div>
       </div>
     </div>` : ''}
