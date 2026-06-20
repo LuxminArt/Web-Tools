@@ -1,0 +1,232 @@
+{
+  "schema": 2,
+  "categories": {
+    "people": {
+      "labelCN": "人物",
+      "labelEN": "People",
+      "groups": [
+        {
+          "id": "adult",
+          "labelCN": "成人",
+          "labelEN": "Adult"
+        },
+        {
+          "id": "child",
+          "labelCN": "孩童",
+          "labelEN": "Child"
+        }
+      ],
+      "assets": [
+        {
+          "id": "silhouette",
+          "group": "adult",
+          "nameCN": "剪影",
+          "nameEN": "Silhouette",
+          "file": "assets/people/silhouette.svg",
+          "w": 0.5,
+          "h": 1.75,
+          "unit": "m",
+          "anchor": "bottom-center",
+          "plane": "upright",
+          "tags": [
+            "人",
+            "person",
+            "剪影"
+          ]
+        },
+        {
+          "id": "stand",
+          "group": "adult",
+          "nameCN": "站立",
+          "nameEN": "Standing",
+          "file": "assets/people/stand.svg",
+          "w": 0.55,
+          "h": 1.75,
+          "unit": "m",
+          "anchor": "bottom-center",
+          "plane": "upright",
+          "tags": [
+            "人",
+            "person",
+            "站"
+          ]
+        },
+        {
+          "id": "walk",
+          "group": "adult",
+          "nameCN": "行走",
+          "nameEN": "Walking",
+          "file": "assets/people/walk.svg",
+          "w": 0.6,
+          "h": 1.75,
+          "unit": "m",
+          "anchor": "bottom-center",
+          "plane": "upright",
+          "tags": [
+            "人",
+            "person",
+            "走"
+          ]
+        },
+        {
+          "id": "point",
+          "group": "adult",
+          "nameCN": "指向",
+          "nameEN": "Pointing",
+          "file": "assets/people/point.svg",
+          "w": 0.7,
+          "h": 1.75,
+          "unit": "m",
+          "anchor": "bottom-center",
+          "plane": "upright",
+          "tags": [
+            "人",
+            "person",
+            "指"
+          ]
+        },
+        {
+          "id": "reach",
+          "group": "adult",
+          "nameCN": "觸碰",
+          "nameEN": "Reaching",
+          "file": "assets/people/reach.svg",
+          "w": 0.6,
+          "h": 1.75,
+          "unit": "m",
+          "anchor": "bottom-center",
+          "plane": "upright",
+          "tags": [
+            "人",
+            "person",
+            "觸碰",
+            "reach"
+          ]
+        },
+        {
+          "id": "child",
+          "group": "child",
+          "nameCN": "孩童",
+          "nameEN": "Child",
+          "file": "assets/people/child.svg",
+          "w": 0.4,
+          "h": 1.2,
+          "unit": "m",
+          "anchor": "bottom-center",
+          "plane": "upright",
+          "tags": [
+            "人",
+            "child",
+            "孩童",
+            "小孩"
+          ]
+        }
+      ]
+    },
+    "sensor": {
+      "labelCN": "感測器",
+      "labelEN": "Sensor",
+      "groups": [
+        {
+          "id": "form",
+          "labelCN": "形式",
+          "labelEN": "Forms"
+        }
+      ],
+      "assets": [
+        {
+          "id": "box",
+          "group": "form",
+          "nameCN": "方盒",
+          "nameEN": "Box",
+          "file": "assets/sensor/box.svg",
+          "w": 0.12,
+          "h": 0.07,
+          "unit": "m",
+          "anchor": "center",
+          "plane": "upright",
+          "tags": [
+            "感測器",
+            "sensor",
+            "方盒",
+            "box"
+          ]
+        },
+        {
+          "id": "dome",
+          "group": "form",
+          "nameCN": "半球",
+          "nameEN": "Dome",
+          "file": "assets/sensor/dome.svg",
+          "w": 0.11,
+          "h": 0.05,
+          "unit": "m",
+          "anchor": "center",
+          "plane": "upright",
+          "tags": [
+            "感測器",
+            "sensor",
+            "半球",
+            "dome"
+          ]
+        },
+        {
+          "id": "bar",
+          "group": "form",
+          "nameCN": "長條",
+          "nameEN": "Bar",
+          "file": "assets/sensor/bar.svg",
+          "w": 0.18,
+          "h": 0.04,
+          "unit": "m",
+          "anchor": "center",
+          "plane": "upright",
+          "tags": [
+            "感測器",
+            "sensor",
+            "長條",
+            "bar",
+            "lidar"
+          ]
+        },
+        {
+          "id": "camera",
+          "group": "form",
+          "nameCN": "鏡頭",
+          "nameEN": "Camera",
+          "file": "assets/sensor/camera.svg",
+          "w": 0.13,
+          "h": 0.06,
+          "unit": "m",
+          "anchor": "center",
+          "plane": "upright",
+          "tags": [
+            "感測器",
+            "sensor",
+            "鏡頭",
+            "camera"
+          ]
+        },
+        {
+          "id": "puck",
+          "group": "form",
+          "nameCN": "圓餅",
+          "nameEN": "Puck",
+          "file": "assets/sensor/puck.svg",
+          "w": 0.1,
+          "h": 0.04,
+          "unit": "m",
+          "anchor": "center",
+          "plane": "upright",
+          "tags": [
+            "感測器",
+            "sensor",
+            "圓餅",
+            "puck",
+            "lidar"
+          ]
+        }
+      ]
+    }
+  }
+}
