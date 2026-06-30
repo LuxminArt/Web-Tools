@@ -1160,12 +1160,17 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
     <!-- TEXT TAB -->
     <div id="panel-text">
-      <div class="md-hint">所有欄位內容以純文字顯示，全選複製後可存入 Notes 備用。下次貼上後點「匯入」即可還原所有欄位。</div>
+      <div class="md-hint">所有欄位內容以純文字顯示，可「全選複製」存入 Notes，或「匯出 .md 檔」存成檔案備份。下次「貼入匯入」或「匯入 .md 檔」即可還原所有欄位。</div>
       <textarea class="md-textarea" id="md-export" spellcheck="false" placeholder="切換到此頁時自動產生..."></textarea>
       <div class="md-actions">
         <button class="md-btn md-btn-copy" onclick="copyMd()">全選複製</button>
         <button class="md-btn md-btn-import" onclick="importMd()">貼入匯入</button>
       </div>
+      <div class="md-actions" style="margin-top:8px;">
+        <button class="md-btn md-btn-import" onclick="downloadMd()">匯出 .md 檔</button>
+        <button class="md-btn md-btn-import" onclick="triggerMdUpload()">匯入 .md 檔</button>
+      </div>
+      <input type="file" id="md-file-input" accept=".md,.txt,text/markdown,text/plain" style="display:none" onchange="handleMdUpload(event)">
       <div class="md-copy-confirm" id="md-confirm"></div>
     </div>
 
@@ -1443,6 +1448,20 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         <label id="lbl-taxrate">營業稅率 (%)</label>
         <input type="number" id="tax-rate" oninput="update()" value="5" min="0" max="100" step="0.1">
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;margin-top:8px;">
+        <div>
+          <label class="field-label" id="lbl-tax-decimals">稅金小數位數</label>
+          <input type="number" id="tax-decimals" value="0" min="0" max="6" step="1" oninput="update()">
+        </div>
+        <div>
+          <label class="field-label" id="lbl-tax-round">進位方式</label>
+          <select id="tax-round" oninput="update()">
+            <option value="round">四捨五入</option>
+            <option value="ceil">無條件進位</option>
+            <option value="floor">無條件捨去</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <!-- 折扣 -->
@@ -1656,6 +1675,8 @@ function generateMd() {
     '',
     '## 稅率與折扣',
     `- 稅率: ${g('tax-rate').value}`,
+    `- 稅金小數位數: ${g('tax-decimals').value}`,
+    `- 進位方式: ${g('tax-round').value}`,
     `- 折扣類型: ${discTypeVal}`,
     `- 折扣數值: ${g('disc-val').value}`,
     '',
@@ -1747,6 +1768,8 @@ function importMd() {
 
   // numeric/select fields
   const tv = val('稅率'); if (tv !== null) g('tax-rate').value = tv;
+  const tdc = val('稅金小數位數'); if (tdc !== null) g('tax-decimals').value = tdc;
+  const trm = val('進位方式'); if (trm !== null) g('tax-round').value = trm;
   const dt = val('折扣類型'); if (dt !== null) g('disc-type').value = dt;
   const dv = val('折扣數值'); if (dv !== null) g('disc-val').value = dv;
   const pt = val('付款條件'); if (pt !== null) g('pay-terms').value = pt;
@@ -1804,6 +1827,49 @@ function importMd() {
   switchTab('edit');
   document.getElementById('md-confirm').textContent = '✓ 匯入完成';
   setTimeout(() => document.getElementById('md-confirm').textContent = '', 2000);
+}
+
+// 匯出：將目前所有欄位以 Markdown 純文字下載成 .md 檔
+function downloadMd() {
+  generateMd(); // 先以最新欄位內容重新產生
+  const text = document.getElementById('md-export').value;
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const docNo = (document.getElementById('qt-no').value || '').trim().replace(/[\/\\:*?"<>|\s]+/g, '-');
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = (docNo || '報價單') + '_' + stamp + '.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const conf = document.getElementById('md-confirm');
+  conf.textContent = '✓ 已匯出 ' + a.download;
+  setTimeout(() => conf.textContent = '', 2500);
+}
+
+// 匯入：開啟檔案選擇器
+function triggerMdUpload() {
+  const input = document.getElementById('md-file-input');
+  input.value = ''; // 清空以便重複選同一檔案時仍會觸發 change
+  input.click();
+}
+
+// 匯入：讀取選取的 .md / .txt 檔，載入文字框後沿用既有 importMd() 還原所有欄位
+function handleMdUpload(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById('md-export').value = reader.result || '';
+    importMd();
+  };
+  reader.onerror = () => {
+    const conf = document.getElementById('md-confirm');
+    if (conf) { conf.textContent = '✗ 檔案讀取失敗'; setTimeout(() => conf.textContent = '', 2500); }
+  };
+  reader.readAsText(file);
 }
 
 
@@ -2607,6 +2673,8 @@ function collectState() {
     items: items.map(it => ({ ...it })),
     // 稅率折扣
     taxRate:    g('tax-rate').value,
+    taxDecimals: g('tax-decimals').value,
+    taxRound:   g('tax-round').value,
     discType:   g('disc-type').value,
     discVal:    g('disc-val').value,
     payTerms:   g('pay-terms').value,
@@ -2679,7 +2747,7 @@ function restoreState() {
       currency:'qt-currency',
       fromName:'from-name', fromEmail:'from-email', fromPhone:'from-phone', fromAddr:'from-addr',
       toName:'to-name', toContact:'to-contact', toEmail:'to-email', toAddr:'to-addr',
-      taxRate:'tax-rate', discType:'disc-type', discVal:'disc-val',
+      taxRate:'tax-rate', taxDecimals:'tax-decimals', taxRound:'tax-round', discType:'disc-type', discVal:'disc-val',
       payTerms:'pay-terms', payCustom:'pay-terms-custom',
       contact1:'contact-line1', contact2:'contact-line2', contact3:'contact-line3',
       notes:'notes', legalText:'legal-text',
@@ -2735,6 +2803,25 @@ const currencySymbolMap = {
   'CNY':'¥','KRW':'₩','JPY':'¥','EUR':'€',
   'GBP':'£','MYR':'RM','SGD':'S$','THB':'฿'
 };
+
+// 依指定小數位數與進位方式處理稅額。
+// mode: 'round' 四捨五入 / 'ceil' 無條件進位 / 'floor' 無條件捨去。
+// EPS 用來吸收浮點誤差（例如 617.25 * 100 可能變成 61724.9999），避免錯誤進位/捨去。
+function roundTax(value, decimals, mode) {
+  const factor = Math.pow(10, decimals);
+  const scaled = value * factor;
+  const EPS = 1e-9;
+  let r;
+  if (mode === 'ceil')       r = Math.ceil(scaled - EPS);
+  else if (mode === 'floor') r = Math.floor(scaled + EPS);
+  else                       r = Math.sign(scaled) * Math.round(Math.abs(scaled) + EPS);
+  return r / factor;
+}
+
+// 依指定小數位數格式化金額（minDec 補零下限，maxDec 顯示上限）。
+function fmtDec(n, minDec, maxDec) {
+  return Number(n).toLocaleString('zh-TW', { minimumFractionDigits: minDec, maximumFractionDigits: maxDec });
+}
 
 function fmt(n) {
   return Number(n).toLocaleString('zh-TW');
@@ -2833,6 +2920,8 @@ function update() {
     ? (currencyLabelEnMap[currencyCode] || currencyCode)
     : currencyLabelZh;
   const taxRate = parseFloat(g('tax-rate').value) || 0;
+  const taxDecimals = Math.max(0, Math.min(6, parseInt(g('tax-decimals').value, 10) || 0));
+  const taxRoundMode = g('tax-round').value || 'round';
 
   const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
   const discType = g('disc-type').value;
@@ -2840,7 +2929,7 @@ function update() {
   const discount = discType === 'pct' ? Math.round(subtotal * discVal / 100)
                  : discType === 'fixed' ? discVal : 0;
   const afterDiscount = subtotal - discount;
-  const tax = Math.round(afterDiscount * taxRate / 100);
+  const tax = roundTax(afterDiscount * taxRate / 100, taxDecimals, taxRoundMode);
   const total = afterDiscount + tax;
 
   // update subtotal display in panel
@@ -2938,8 +3027,8 @@ function update() {
       <div class="qt-totals-inner">
         <div class="qt-trow"><span>${T[currentLang].pvSubtotal}</span><span>${currency} ${fmt(subtotal)}</span></div>
         ${discount > 0 ? `<div class="qt-trow"><span>${T[currentLang].pvDiscount}${discType==='pct'?' ('+discVal+'%)':''}</span><span>− ${currency} ${fmt(discount)}</span></div>` : ''}
-        <div class="qt-trow"><span>${T[currentLang].pvTax(taxRate)}</span><span>${currency} ${fmt(tax)}</span></div>
-        <div class="qt-trow grand"><span>${T[currentLang].pvTotal}</span><span>${currency} ${fmt(total)}</span></div>
+        <div class="qt-trow"><span>${T[currentLang].pvTax(taxRate)}</span><span>${currency} ${fmtDec(tax, taxDecimals, taxDecimals)}</span></div>
+        <div class="qt-trow grand"><span>${T[currentLang].pvTotal}</span><span>${currency} ${fmtDec(total, taxDecimals, Math.max(taxDecimals, 3))}</span></div>
       </div>
     </div>
 
