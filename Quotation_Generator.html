@@ -365,24 +365,49 @@ select { cursor: pointer; }
   background: #555;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   padding: 30px 20px;
 }
 .preview-wrap::-webkit-scrollbar { width: 6px; }
 .preview-wrap::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 3px; }
 
 /* ── QUOTATION PREVIEW ── */
+.qt-pages {
+  width: 210mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
 .qt {
   width: 210mm;
+  height: 297mm;
   min-height: 297mm;
   background: #0a0a0a;
   color: #f5f5f0;
   padding: 14mm 16mm;
   position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px;
   flex-shrink: 0;
   box-shadow: 0 8px 40px rgba(0,0,0,0.6);
 }
+.qt-pagination-source {
+  position: absolute !important;
+  left: -100000px !important;
+  top: 0 !important;
+  height: auto !important;
+  min-height: 297mm !important;
+  overflow: visible !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+}
+.qt > :not(.qt-page-number) { flex-shrink: 0; }
 .qt::before {
   content: '';
   position: absolute;
@@ -398,6 +423,61 @@ select { cursor: pointer; }
   padding-bottom: 6mm;
   border-bottom: 0.5px solid rgba(245,245,240,0.1);
 }
+.qt-continuation-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7mm;
+  padding-bottom: 4mm;
+  border-bottom: 0.5px solid rgba(245,245,240,0.1);
+}
+.qt-continuation-title {
+  min-width: 0;
+  text-align: right;
+}
+.qt-continuation-title > span {
+  display: block;
+  margin-bottom: 2px;
+  color: rgba(245,245,240,0.3);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.qt-continuation-title > strong {
+  display: block;
+  overflow: hidden;
+  color: var(--doc-text);
+  font-size: 15px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qt-continuation-title > small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(245,245,240,0.35);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+}
+.qt-page-number {
+  position: absolute;
+  right: 16mm;
+  bottom: 4.5mm;
+  z-index: 1;
+  color: rgba(245,245,240,0.28);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+.qt-page-number:empty { display: none; }
+.qt-compact .qt-header { margin-bottom: 7mm; padding-bottom: 5mm; }
+.qt-compact .qt-meta { margin-bottom: 6mm; padding-bottom: 5mm; }
+.qt-compact .qt-parties { margin-bottom: 6mm; }
+.qt-compact .qt-validity { margin-bottom: 4mm; }
+.qt-compact .qt-table td { padding-top: 6px; padding-bottom: 6px; }
+.qt-compact .qt-totals { margin-top: 3mm; padding-top: 3mm; }
+.qt-compact .qt-notes { margin-top: 3mm; padding: 3mm 5mm; }
+.qt-compact .qt-signature-section { margin-top: 5mm; margin-bottom: 4mm; }
+.qt-compact .qt-footer { padding-top: 3mm; }
 .qt-logo { height: 40px; }
 .qt-title-block { text-align: right; }
 .qt-title {
@@ -495,6 +575,8 @@ select { cursor: pointer; }
 .qt-table th.r { text-align: right; }
 .qt-table tbody tr {
   border-bottom: 0.5px solid rgba(245,245,240,0.06);
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .qt-table td {
   padding: 8px 0;
@@ -520,6 +602,8 @@ select { cursor: pointer; }
   margin-top: 5mm;
   padding-top: 5mm;
   border-top: 0.5px solid rgba(245,245,240,0.1);
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .qt-totals-inner { min-width: 200px; }
 .qt-trow {
@@ -544,6 +628,8 @@ select { cursor: pointer; }
   border-radius: 3px;
   padding: 4mm 5mm;
   margin-top: 5mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .qt-notes > span {
   display: block;
@@ -571,14 +657,17 @@ select { cursor: pointer; }
 .qt-rich-text strong { font-weight: 650; color: color-mix(in srgb, var(--doc-text) 78%, transparent); }
 
 .qt-footer {
-  position: absolute;
-  bottom: 12mm;
-  left: 16mm; right: 16mm;
+  position: static;
+  width: 100%;
+  margin-top: auto;
   border-top: 0.5px solid rgba(245,245,240,0.08);
   padding-top: 4mm;
   display: flex;
   gap: 8mm;
   align-items: flex-start;
+  flex-shrink: 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .qt-footer > div {
   flex: 1 1 0;
@@ -637,6 +726,10 @@ select { cursor: pointer; }
 .qt.light .qt-footer > div > p, .qt.light .qt-footer .qt-rich-text { color: rgba(0,0,0,0.5); }
 .qt.light .qt-no { color: rgba(0,0,0,0.45); }
 .qt.light .qt-footer b { color: rgba(0,0,0,0.7) !important; }
+.qt.light .qt-continuation-head { border-color: rgba(0,0,0,0.1); }
+.qt.light .qt-continuation-title > span,
+.qt.light .qt-continuation-title > small,
+.qt.light .qt-page-number { color: rgba(0,0,0,0.32); }
 
 
 input.dirty, textarea.dirty, select.dirty {
@@ -650,7 +743,9 @@ input.dirty, textarea.dirty, select.dirty {
   grid-template-columns: 1fr 1fr;
   gap: 8mm;
   margin-top: 8mm;
-  margin-bottom: 20mm;
+  margin-bottom: 6mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .qt-sig-block { display: flex; flex-direction: column; gap: 3mm; }
 .qt-sig-block > span {
@@ -1115,13 +1210,25 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     overflow: visible;
     justify-content: unset;
   }
+  .qt-pages {
+    width: 210mm;
+    display: block;
+  }
   .qt {
-    width: 100%;
-    min-height: 100vh;
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
     box-shadow: none;
     margin: 0;
-    padding: 12mm 14mm;
+    padding: 14mm 16mm;
+    break-after: page;
+    page-break-after: always;
   }
+  .qt:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .qt-pagination-source { display: none !important; }
 }
 
 /* ── COLLAPSIBLE SECTIONS ── */
@@ -1862,7 +1969,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
   <!-- RIGHT PREVIEW -->
   <div class="preview-wrap">
-    <div class="qt light" id="preview">
+    <div class="qt-pages light" id="preview">
       <!-- rendered by JS -->
     </div>
   </div>
@@ -3424,6 +3531,126 @@ function esc(s) {
 
 function g(id) { return document.getElementById(id); }
 
+function quotationPageOverflows(page) {
+  return page.scrollHeight > page.clientHeight + 1;
+}
+
+function tryCompactQuotationPage(page, maxOverflow = 48) {
+  if (page.classList.contains('qt-compact')) return false;
+  const overflow = page.scrollHeight - page.clientHeight;
+  if (overflow <= 1 || overflow > maxOverflow) return false;
+  page.classList.add('qt-compact');
+  if (!quotationPageOverflows(page)) return true;
+  page.classList.remove('qt-compact');
+  return false;
+}
+
+function createQuotationPage(previewEl, context, isContinuation = false) {
+  const page = document.createElement('section');
+  page.className = `qt${currentTheme === 'light' ? ' light' : ''}`;
+  page.style.fontFamily = context.fontFamily;
+
+  if (isContinuation) {
+    page.insertAdjacentHTML('beforeend', `
+      <div class="qt-continuation-head">
+        <div style="line-height:0">${getLogoHTML(currentTheme)}</div>
+        <div class="qt-continuation-title">
+          <span>${currentLang === 'zh' ? '報價單續頁' : 'Quotation continued'}</span>
+          <strong style="font-family:${currentFont.titleFamily}">${esc(context.title)}</strong>
+          <small>${esc(context.number)}</small>
+        </div>
+      </div>
+    `);
+  }
+
+  const pageNumber = document.createElement('div');
+  pageNumber.className = 'qt-page-number';
+  page.appendChild(pageNumber);
+  previewEl.appendChild(page);
+  return page;
+}
+
+function createQuotationTable(sourceTable) {
+  const table = sourceTable.cloneNode(false);
+  const head = sourceTable.querySelector('thead');
+  if (head) table.appendChild(head.cloneNode(true));
+  table.appendChild(document.createElement('tbody'));
+  return table;
+}
+
+function appendClosingBlocksWithPagination(previewEl, page, sourceBlocks, context) {
+  if (!sourceBlocks.length) return page;
+
+  const trialClones = sourceBlocks.map(block => block.cloneNode(true));
+  trialClones.forEach(block => page.appendChild(block));
+  if (!quotationPageOverflows(page) || tryCompactQuotationPage(page)) return page;
+
+  trialClones.forEach(block => block.remove());
+  page = createQuotationPage(previewEl, context, true);
+  const freshPageClones = sourceBlocks.map(block => block.cloneNode(true));
+  freshPageClones.forEach(block => page.appendChild(block));
+  if (!quotationPageOverflows(page)) return page;
+
+  // Extremely long closing content falls back to protected block-by-block pages.
+  freshPageClones.forEach(block => block.remove());
+  sourceBlocks.forEach(sourceBlock => {
+    const clone = sourceBlock.cloneNode(true);
+    page.appendChild(clone);
+    if (!quotationPageOverflows(page)) return;
+
+    clone.remove();
+    page = createQuotationPage(previewEl, context, true);
+    page.appendChild(sourceBlock.cloneNode(true));
+  });
+  return page;
+}
+
+function paginateQuotationPreview(previewEl, sourceEl, context) {
+  const sourceTable = sourceEl.querySelector('.qt-table');
+  const sourceRows = sourceTable ? [...sourceTable.querySelectorAll('tbody > tr')] : [];
+  const firstPageSelectors = ['.qt-header', '.qt-meta', '.qt-parties', '.qt-validity'];
+  const closingSelectors = ['.qt-totals', '.qt-notes', '.qt-signature-section', '.qt-footer'];
+
+  let page = createQuotationPage(previewEl, context, false);
+  firstPageSelectors.forEach(selector => {
+    const node = sourceEl.querySelector(selector);
+    if (node) page.appendChild(node.cloneNode(true));
+  });
+
+  if (sourceTable) {
+    let pageTable = createQuotationTable(sourceTable);
+    let pageBody = pageTable.querySelector('tbody');
+    page.appendChild(pageTable);
+
+    sourceRows.forEach(sourceRow => {
+      const row = sourceRow.cloneNode(true);
+      pageBody.appendChild(row);
+      if (!quotationPageOverflows(page) || tryCompactQuotationPage(page)) return;
+
+      row.remove();
+      if (!pageBody.children.length) pageTable.remove();
+
+      page = createQuotationPage(previewEl, context, true);
+      pageTable = createQuotationTable(sourceTable);
+      pageBody = pageTable.querySelector('tbody');
+      page.appendChild(pageTable);
+      pageBody.appendChild(sourceRow.cloneNode(true));
+    });
+  }
+
+  const closingBlocks = closingSelectors
+    .map(selector => sourceEl.querySelector(selector))
+    .filter(Boolean);
+  appendClosingBlocksWithPagination(previewEl, page, closingBlocks, context);
+
+  sourceEl.remove();
+  const pages = [...previewEl.querySelectorAll(':scope > .qt')];
+  pages.forEach((quotationPage, index) => {
+    const marker = quotationPage.querySelector('.qt-page-number');
+    if (marker) marker.textContent = pages.length > 1 ? `${index + 1} / ${pages.length}` : '';
+  });
+}
+
 function update() {
   const currencyCode = g('qt-currency').value;
   const currency = currencySymbolMap[currencyCode] || currencyCode;
@@ -3498,8 +3725,14 @@ function update() {
   // Apply font to preview container
   const previewEl = document.getElementById('preview');
   previewEl.style.fontFamily = currentFont.family;
+  previewEl.replaceChildren();
 
-  previewEl.innerHTML = `
+  const sourceEl = document.createElement('article');
+  sourceEl.className = `qt qt-pagination-source${currentTheme === 'light' ? ' light' : ''}`;
+  sourceEl.style.fontFamily = currentFont.family;
+  previewEl.appendChild(sourceEl);
+
+  sourceEl.innerHTML = `
     <div class="qt-header">
       <div id="qt-logo-wrap" style="line-height:0">${getLogoHTML(currentTheme)}</div>
       <div class="qt-title-block">
@@ -3584,7 +3817,11 @@ function update() {
       </div>
     </footer>
   `;
-  // logo is now rendered inline via getLogoHTML() in template
+  paginateQuotationPreview(previewEl, sourceEl, {
+    title: qtDocTitle,
+    number: qtNo,
+    fontFamily: currentFont.family,
+  });
 
   // autosave
   scheduleSave();
@@ -3614,6 +3851,11 @@ const _restored = restoreState();
 renderPanel();
 update();
 enhanceSelects();
+
+// Recalculate physical page breaks once web fonts have their final metrics.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => update()).catch(() => {});
+}
 
 // if restored, re-sync UI components
 if (_restored) {
