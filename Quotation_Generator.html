@@ -88,7 +88,7 @@ body {
 .panel::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
 
 .section-title {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
@@ -99,8 +99,8 @@ body {
 .field-group { display: flex; flex-direction: column; gap: 8px; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 label.field-label {
-  font-size: 10px;
-  color: var(--muted);
+  font-size: 11px;
+  color: rgba(240,240,235,0.48);
   display: block;
   margin-bottom: 3px;
 }
@@ -109,8 +109,10 @@ input[type="text"], input[type="number"], input[type="date"], select, textarea {
   background: var(--input-bg);
   border: 0.5px solid var(--border-mid);
   color: var(--text);
-  padding: 7px 10px;
-  font-size: 12px;
+  padding: 8px 10px;
+  min-height: 36px;
+  font-size: 13px;
+  line-height: 1.4;
   font-family: inherit;
   border-radius: 3px;
   outline: none;
@@ -118,52 +120,190 @@ input[type="text"], input[type="number"], input[type="date"], select, textarea {
 }
 input:focus, select:focus, textarea:focus {
   border-color: rgba(240,240,235,0.4);
+  box-shadow: 0 0 0 2px rgba(240,240,235,0.06);
 }
-textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
+textarea { resize: vertical; min-height: 60px; line-height: 1.55; }
 select { cursor: pointer; }
+
+.field-help {
+  margin-top: 6px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(240,240,235,0.3);
+}
+
+.wrapped-single-line {
+  min-height: 54px;
+  max-height: 120px;
+  resize: none;
+  overflow-y: auto;
+}
+
+.long-textarea {
+  min-height: 88px;
+  max-height: 220px;
+  resize: none;
+  overflow-y: auto;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.field-label-row .field-label { margin-bottom: 0; }
+.format-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  background: rgba(240,240,235,0.025);
+}
+.format-btn {
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  color: rgba(240,240,235,0.46);
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.format-btn:hover {
+  color: var(--text);
+  background: rgba(240,240,235,0.08);
+}
+.format-btn:focus-visible {
+  outline: 1px solid rgba(240,240,235,0.5);
+  outline-offset: 1px;
+}
+.format-btn.format-bold {
+  font-weight: 800;
+  font-size: 12px;
+}
+.format-hint {
+  margin-top: 5px;
+  font-size: 9.5px;
+  line-height: 1.45;
+  color: rgba(240,240,235,0.26);
+}
 
 /* ── ITEMS ── */
 .item-row {
   background: var(--input-bg);
-  border: 0.5px solid var(--border);
-  border-radius: 4px;
-  padding: 10px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 6px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 10px;
   position: relative;
 }
-.item-row .item-grid {
-  display: grid;
-  grid-template-columns: 1fr 80px 60px 70px;
-  gap: 6px;
+.item-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 9px;
+  border-bottom: 0.5px solid var(--border);
 }
-.item-row .item-desc input {
-  font-size: 11px;
-  padding: 5px 8px;
-  color: var(--muted);
+.item-card-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+.item-card-index {
+  flex-shrink: 0;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(240,240,235,0.3);
+  text-transform: uppercase;
+}
+.item-card-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(240,240,235,0.78);
+}
+.item-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.item-action {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: rgba(240,240,235,0.38);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.item-action:hover:not(:disabled) {
+  color: var(--text);
+  background: rgba(240,240,235,0.06);
+  border-color: var(--border);
+}
+.item-action:disabled {
+  opacity: 0.18;
+  cursor: default;
+}
+.item-action.danger:hover {
+  color: #ffb4b4;
+  background: rgba(255,90,90,0.08);
+  border-color: rgba(255,90,90,0.18);
+}
+.item-row .item-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.item-meta-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(64px, 0.7fr) minmax(78px, 0.9fr);
+  gap: 8px;
+  align-items: end;
+}
+.item-row .item-desc textarea {
+  min-height: 58px;
+  max-height: 160px;
+  resize: none;
+  overflow-y: auto;
+  font-size: 12px;
+  padding: 8px 9px;
+  color: rgba(240,240,235,0.62);
   background: transparent;
   border-color: var(--border);
 }
 .item-subtotal {
   font-size: 11px;
-  color: var(--muted);
+  color: rgba(240,240,235,0.46);
   text-align: right;
-  padding-top: 2px;
+  padding-top: 8px;
+  border-top: 0.5px solid var(--border);
 }
-.btn-remove {
-  position: absolute;
-  top: 8px; right: 8px;
-  background: none;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  padding: 0 4px;
-  transition: color 0.15s;
-}
-.btn-remove:hover { color: var(--text); }
 .btn-add {
   background: none;
   border: 0.5px dashed var(--border-mid);
@@ -176,6 +316,29 @@ select { cursor: pointer; }
   transition: all 0.15s;
 }
 .btn-add:hover { border-color: rgba(240,240,235,0.35); color: var(--text); }
+.item-undo-toast {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 4px;
+  background: #202020;
+  color: rgba(240,240,235,0.68);
+  font-size: 11px;
+}
+.item-undo-toast.show { display: flex; }
+.item-undo-toast button {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* tax row */
 .tax-row {
@@ -333,6 +496,7 @@ select { cursor: pointer; }
 .qt-table td.r { text-align: right; }
 .qt-table .td-name { font-weight: 500; margin-bottom: 2px; }
 .qt-table .td-desc { font-size: 9.5px; color: rgba(245,245,240,0.4); }
+.qt-table .td-desc strong { font-weight: 650; color: color-mix(in srgb, var(--doc-text) 78%, transparent); }
 
 .qt-totals {
   display: flex;
@@ -373,12 +537,22 @@ select { cursor: pointer; }
   color: rgba(245,245,240,0.3);
   margin-bottom: 5px;
 }
-.qt-notes p {
+.qt-notes p,
+.qt-notes .qt-rich-text {
   font-size: 10px;
   color: rgba(245,245,240,0.45);
   line-height: 1.7;
   white-space: pre-wrap;
 }
+.qt-rich-text .fmt-line { min-height: 1em; }
+.qt-rich-text ul,
+.qt-rich-text ol {
+  margin: 2px 0 2px 1.35em;
+  padding: 0;
+  white-space: normal;
+}
+.qt-rich-text li { padding-left: 0.15em; }
+.qt-rich-text strong { font-weight: 650; color: color-mix(in srgb, var(--doc-text) 78%, transparent); }
 
 .qt-footer {
   position: absolute;
@@ -405,11 +579,14 @@ select { cursor: pointer; }
   color: rgba(245,245,240,0.25);
   margin-bottom: 4px;
 }
-.qt-footer > div > p {
+.qt-footer > div > p,
+.qt-footer .qt-rich-text {
   font-size: 9.5px;
   color: rgba(245,245,240,0.45);
   line-height: 1.6;
 }
+.qt-footer .qt-rich-text ul,
+.qt-footer .qt-rich-text ol { margin-left: 1.2em; }
 
 
 .qt.light {
@@ -438,10 +615,10 @@ select { cursor: pointer; }
 .qt.light .qt-trow.grand { color: #111; border-color: rgba(0,0,0,0.18); }
 .qt.light .qt-notes { background: rgba(0,0,0,0.025); border-color: rgba(0,0,0,0.07); }
 .qt.light .qt-notes > span { color: rgba(0,0,0,0.3); }
-.qt.light .qt-notes p { color: rgba(0,0,0,0.45); }
+.qt.light .qt-notes p, .qt.light .qt-notes .qt-rich-text { color: rgba(0,0,0,0.45); }
 .qt.light .qt-footer { border-color: rgba(0,0,0,0.1); }
 .qt.light .qt-footer > div > span { color: rgba(0,0,0,0.3); }
-.qt.light .qt-footer > div > p { color: rgba(0,0,0,0.5); }
+.qt.light .qt-footer > div > p, .qt.light .qt-footer .qt-rich-text { color: rgba(0,0,0,0.5); }
 .qt.light .qt-no { color: rgba(0,0,0,0.45); }
 .qt.light .qt-footer b { color: rgba(0,0,0,0.7) !important; }
 
@@ -870,7 +1047,8 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 .qt .qt-meta-item > span, .qt .qt-party > span, .qt .qt-footer > div > span,
 .qt .qt-notes > span, .qt .qt-table th
   { color: color-mix(in srgb, var(--doc-text) 35%, transparent) !important; }
-.qt .qt-party p, .qt .qt-footer > div > p, .qt .qt-notes p, .qt .qt-table .td-desc
+.qt .qt-party p, .qt .qt-footer > div > p, .qt .qt-footer .qt-rich-text,
+.qt .qt-notes p, .qt .qt-notes .qt-rich-text, .qt .qt-table .td-desc
   { color: color-mix(in srgb, var(--doc-text) 55%, transparent) !important; }
 .qt .qt-meta-item > p, .qt .qt-party .qt-party-name, .qt .qt-table td, .qt .qt-trow
   { color: var(--doc-text) !important; }
@@ -889,9 +1067,9 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
 /* Sections inside collapsible groups */
 .collapsible-body .section-title {
-  font-size: 8.5px;
+  font-size: 9.5px;
   letter-spacing: 0.15em;
-  color: rgba(240,240,235,0.2);
+  color: rgba(240,240,235,0.34);
   text-transform: uppercase;
   margin-bottom: 8px;
   border-bottom: none;
@@ -1161,12 +1339,12 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <!-- TABS -->
     <div class="panel-tabs">
       <button class="panel-tab active" id="tab-edit" onclick="switchTab('edit')">編輯</button>
-      <button class="panel-tab" id="tab-text" onclick="switchTab('text')">文字</button>
+      <button class="panel-tab" id="tab-text" onclick="switchTab('text')">資料 / 備份</button>
     </div>
 
     <!-- TEXT TAB -->
     <div id="panel-text">
-      <div class="md-hint">所有欄位內容以純文字顯示，可「全選複製」存入 Notes，或「匯出 .md 檔」存成檔案備份。下次「貼入匯入」或「匯入 .md 檔」即可還原所有欄位。</div>
+      <div class="md-hint">所有欄位內容以純文字顯示，粗體與清單會以相容的文字標記保留。可「全選複製」存入 Notes，或「匯出 .md 檔」備份；下次貼入或匯入檔案即可還原。</div>
       <textarea class="md-textarea" id="md-export" spellcheck="false" placeholder="切換到此頁時自動產生..."></textarea>
       <div class="md-actions">
         <button class="md-btn md-btn-copy" onclick="copyMd()">全選複製</button>
@@ -1388,7 +1566,10 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
         <div>
           <label class="field-label" id="lbl-from-addr">地址</label>
-          <input type="text" id="from-addr" oninput="markDirty('from-addr');update()" placeholder="城市、區域、街道地址">
+          <textarea class="wrapped-single-line" id="from-addr" rows="2" data-autogrow
+            onkeydown="preventWrappedFieldNewline(event)"
+            oninput="normalizeWrappedField(this);markDirty('from-addr');update()"
+            placeholder="城市、區域、街道地址"></textarea>
         </div>
       </div>
     </div>
@@ -1423,7 +1604,10 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
         <div>
           <label class="field-label" id="lbl-to-addr">地址</label>
-          <input type="text" id="to-addr" oninput="markDirty('to-addr');update()" placeholder="客戶地址">
+          <textarea class="wrapped-single-line" id="to-addr" rows="2" data-autogrow
+            onkeydown="preventWrappedFieldNewline(event)"
+            oninput="normalizeWrappedField(this);markDirty('to-addr');update()"
+            placeholder="客戶地址"></textarea>
         </div>
       </div>
     </div>
@@ -1443,9 +1627,27 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <!-- 服務項目 -->
     <div>
       <div class="section-title" id="sec-items">服務項目</div>
+      <div class="field-help" style="margin-top:-3px;margin-bottom:9px;">名稱改為全寬編輯；說明會依內容自動增高，資料仍以純文字儲存。</div>
       <div id="items-list" class="field-group"></div>
       <button class="btn-add" id="btn-add-item" onclick="addItem()">＋ 新增項目</button>
+      <div class="item-undo-toast" id="item-undo-toast" role="status" aria-live="polite">
+        <span id="item-undo-message">已刪除項目</span>
+        <button type="button" onclick="undoRemoveItem()">復原</button>
+      </div>
     </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP: 金額與付款 -->
+    <div class="collapsible-group">
+      <div class="collapsible-header" onclick="toggleGroup('group-payment')">
+        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">金額與付款</div>
+        <span class="collapsible-arrow" id="arrow-group-payment">▾</span>
+      </div>
+      <div class="collapsible-body" id="body-group-payment">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
 
     <!-- 稅率 -->
     <div>
@@ -1507,7 +1709,10 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
         <div id="pay-terms-custom-wrap" style="display:none;">
           <label class="field-label">自訂內容</label>
-          <input type="text" id="pay-terms-custom" placeholder="請輸入付款條件" oninput="markDirty('pay-terms-custom');update()">
+          <textarea class="wrapped-single-line" id="pay-terms-custom" rows="2" data-autogrow
+            onkeydown="preventWrappedFieldNewline(event)"
+            oninput="normalizeWrappedField(this);markDirty('pay-terms-custom');update()"
+            placeholder="請輸入付款條件"></textarea>
         </div>
       </div>
     </div>
@@ -1541,9 +1746,22 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
     <!-- 備註 -->
     <div>
-      <div class="section-title" id="sec-notes">備註</div>
-      <textarea id="notes" oninput="markDirty('notes');update()" placeholder="付款條件、修改次數等條款...">· 正式委託後需支付 50% 訂金，餘款於最終交付後 7 個工作日內付清。
+      <div class="field-label-row" style="margin-bottom:6px;">
+        <div class="section-title" id="sec-notes" style="margin-bottom:0;">備註</div>
+        <div class="format-toolbar" aria-label="備註文字格式">
+          <button type="button" class="format-btn format-bold" title="粗體" aria-label="粗體"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','bold')">B</button>
+          <button type="button" class="format-btn" title="項目符號" aria-label="項目符號"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','bullet')">•</button>
+          <button type="button" class="format-btn" title="編號清單" aria-label="編號清單"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','number')">1.</button>
+          <button type="button" class="format-btn" title="清除格式" aria-label="清除格式"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','clear')">Tx</button>
+        </div>
+      </div>
+      <textarea class="long-textarea" id="notes" data-autogrow oninput="autoGrowTextarea(this);markDirty('notes');update()" placeholder="付款條件、修改次數等條款...">· 正式委託後需支付 50% 訂金，餘款於最終交付後 7 個工作日內付清。
 · 修改次數：每項目含 2 次主要修改，超出部分另計。</textarea>
+      <div class="format-hint">選取文字後套用粗體；清單格式會保留在資料備份中。</div>
     </div>
 
         </div>
@@ -1579,8 +1797,21 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
     <!-- 法律聲明 -->
     <div>
-      <div class="section-title" id="sec-legal">法律聲明（頁底）</div>
-      <textarea id="legal-text" oninput="markDirty('legal-text');update()" rows="3">本報價單於有效期限後自動失效。經雙方簽署後正式生效，並具法律約束力。</textarea>
+      <div class="field-label-row" style="margin-bottom:6px;">
+        <div class="section-title" id="sec-legal" style="margin-bottom:0;">法律聲明（頁底）</div>
+        <div class="format-toolbar" aria-label="法律聲明文字格式">
+          <button type="button" class="format-btn format-bold" title="粗體" aria-label="粗體"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','bold')">B</button>
+          <button type="button" class="format-btn" title="項目符號" aria-label="項目符號"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','bullet')">•</button>
+          <button type="button" class="format-btn" title="編號清單" aria-label="編號清單"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','number')">1.</button>
+          <button type="button" class="format-btn" title="清除格式" aria-label="清除格式"
+            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','clear')">Tx</button>
+        </div>
+      </div>
+      <textarea class="long-textarea" id="legal-text" data-autogrow oninput="autoGrowTextarea(this);markDirty('legal-text');update()" rows="3">本報價單於有效期限後自動失效。經雙方簽署後正式生效，並具法律約束力。</textarea>
+      <div class="format-hint">支援粗體與清單；未套用格式時維持原本外觀。</div>
     </div>
 
     <!-- 付款資訊 -->
@@ -2851,64 +3082,294 @@ function addItem() {
   update();
 }
 
+let removedItemUndo = null;
+let itemUndoTimer = null;
+
 function removeItem(i) {
-  items.splice(i, 1);
+  const removed = items.splice(i, 1)[0];
+  if (!removed) return;
+  removedItemUndo = { item: { ...removed }, index: i };
+  renderPanel();
+  showItemUndo(removed.name);
+  update();
+}
+
+function showItemUndo(itemName) {
+  const toast = document.getElementById('item-undo-toast');
+  const message = document.getElementById('item-undo-message');
+  if (!toast || !message) return;
+  message.textContent = currentLang === 'zh'
+    ? (itemName ? `已刪除「${itemName}」` : '已刪除未命名項目')
+    : (itemName ? `Removed “${itemName}”` : 'Unnamed item removed');
+  toast.classList.add('show');
+  clearTimeout(itemUndoTimer);
+  itemUndoTimer = setTimeout(() => {
+    removedItemUndo = null;
+    toast.classList.remove('show');
+  }, 6000);
+}
+
+function undoRemoveItem() {
+  if (!removedItemUndo) return;
+  const insertAt = Math.min(removedItemUndo.index, items.length);
+  items.splice(insertAt, 0, removedItemUndo.item);
+  removedItemUndo = null;
+  clearTimeout(itemUndoTimer);
+  const toast = document.getElementById('item-undo-toast');
+  if (toast) toast.classList.remove('show');
   renderPanel();
   update();
+}
+
+function duplicateItem(i) {
+  if (!items[i]) return;
+  items.splice(i + 1, 0, { ...items[i] });
+  renderPanel();
+  update();
+}
+
+function moveItem(i, delta) {
+  const target = i + delta;
+  if (!items[i] || target < 0 || target >= items.length) return;
+  [items[i], items[target]] = [items[target], items[i]];
+  renderPanel();
+  update();
+}
+
+function updateItemCardTitle(i, value) {
+  const title = document.getElementById(`item-card-title-${i}`);
+  if (title) title.textContent = value.trim() || (currentLang === 'zh' ? '未命名項目' : 'Untitled item');
+}
+
+function preventWrappedFieldNewline(event) {
+  if (event.key === 'Enter' && !event.isComposing) event.preventDefault();
+}
+
+function normalizeWrappedField(el) {
+  el.value = el.value.replace(/\s*[\r\n]+\s*/g, ' ');
+  autoGrowTextarea(el);
+}
+
+function autoGrowTextarea(el) {
+  if (!el) return;
+  const maxHeight = el.classList.contains('item-desc-textarea') ? 160
+    : el.classList.contains('long-textarea') ? 220
+    : el.classList.contains('wrapped-single-line') ? 120
+    : 160;
+  el.style.height = 'auto';
+  const minHeight = parseFloat(getComputedStyle(el).minHeight) || 0;
+  const nextHeight = Math.min(maxHeight, Math.max(minHeight, el.scrollHeight));
+  el.style.height = `${nextHeight}px`;
+  el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+}
+
+function refreshAutoGrowTextareas(root = document) {
+  root.querySelectorAll('textarea[data-autogrow]').forEach(autoGrowTextarea);
+}
+
+function applyTextFormat(fieldId, action) {
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+
+  const value = el.value;
+  const start = el.selectionStart ?? 0;
+  const end = el.selectionEnd ?? start;
+  let nextValue = value;
+  let nextStart = start;
+  let nextEnd = end;
+
+  if (action === 'bold') {
+    const selected = value.slice(start, end);
+    const hasOuterMarkers = start >= 2 && value.slice(start - 2, start) === '**' && value.slice(end, end + 2) === '**';
+    const selectionHasMarkers = selected.startsWith('**') && selected.endsWith('**') && selected.length >= 4;
+
+    if (hasOuterMarkers) {
+      nextValue = value.slice(0, start - 2) + selected + value.slice(end + 2);
+      nextStart = start - 2;
+      nextEnd = end - 2;
+    } else if (selectionHasMarkers) {
+      const unwrapped = selected.slice(2, -2);
+      nextValue = value.slice(0, start) + unwrapped + value.slice(end);
+      nextEnd = start + unwrapped.length;
+    } else if (start === end) {
+      nextValue = value.slice(0, start) + '****' + value.slice(end);
+      nextStart = nextEnd = start + 2;
+    } else {
+      nextValue = value.slice(0, start) + '**' + selected + '**' + value.slice(end);
+      nextStart = start + 2;
+      nextEnd = end + 2;
+    }
+  }
+
+  if (action === 'bullet' || action === 'number') {
+    const lineStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+    const foundLineEnd = value.indexOf('\n', end);
+    const lineEnd = foundLineEnd === -1 ? value.length : foundLineEnd;
+    const block = value.slice(lineStart, lineEnd);
+    const lines = block.split('\n');
+    const activePattern = action === 'bullet' ? /^\s*-\s+/ : /^\s*\d+\.\s+/;
+    const removePattern = /^(\s*)(?:[-·•]\s+|\d+\.\s+)/;
+    const nonEmptyLines = lines.filter(line => line.trim());
+    const shouldRemove = nonEmptyLines.length > 0 && nonEmptyLines.every(line => activePattern.test(line));
+    let counter = 1;
+    const transformed = lines.map(line => {
+      if (!line.trim()) {
+        if (lines.length === 1 && !shouldRemove) return action === 'bullet' ? '- ' : '1. ';
+        return line;
+      }
+      if (shouldRemove) return line.replace(removePattern, '$1');
+      const indent = (line.match(/^\s*/) || [''])[0];
+      const content = line.replace(removePattern, '$1').slice(indent.length);
+      const prefix = action === 'bullet' ? '- ' : `${counter++}. `;
+      return indent + prefix + content;
+    }).join('\n');
+    nextValue = value.slice(0, lineStart) + transformed + value.slice(lineEnd);
+    nextStart = lineStart;
+    nextEnd = lineStart + transformed.length;
+  }
+
+  if (action === 'clear') {
+    const useSelection = start !== end;
+    const scopeStart = useSelection ? start : 0;
+    const scopeEnd = useSelection ? end : value.length;
+    const source = value.slice(scopeStart, scopeEnd);
+    const cleaned = source
+      .replace(/\*\*/g, '')
+      .replace(/^(\s*)(?:-\s+|\d+\.\s+)/gm, '$1');
+    nextValue = value.slice(0, scopeStart) + cleaned + value.slice(scopeEnd);
+    nextStart = scopeStart;
+    nextEnd = scopeStart + cleaned.length;
+  }
+
+  el.value = nextValue;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.focus();
+  el.setSelectionRange(nextStart, nextEnd);
+}
+
+function renderInlineFormatting(value) {
+  return esc(String(value || '')).replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function renderFormattedText(value, allowLists = true) {
+  const lines = String(value || '').split(/\r?\n/);
+  let html = '';
+  let openList = '';
+
+  const closeList = () => {
+    if (!openList) return;
+    html += `</${openList}>`;
+    openList = '';
+  };
+
+  lines.forEach(line => {
+    const bullet = allowLists ? line.match(/^\s*-\s+(.+)$/) : null;
+    const numbered = allowLists ? line.match(/^\s*\d+\.\s+(.+)$/) : null;
+    const listType = bullet ? 'ul' : numbered ? 'ol' : '';
+
+    if (listType) {
+      if (openList !== listType) {
+        closeList();
+        openList = listType;
+        html += `<${openList}>`;
+      }
+      html += `<li>${renderInlineFormatting((bullet || numbered)[1])}</li>`;
+      return;
+    }
+
+    closeList();
+    html += line
+      ? `<div class="fmt-line">${renderInlineFormatting(line)}</div>`
+      : '<div class="fmt-line"><br></div>';
+  });
+
+  closeList();
+  return html;
 }
 
 function renderPanel() {
   const list = document.getElementById('items-list');
   list.innerHTML = items.map((it, i) => `
-    <div class="item-row">
-      <button class="btn-remove" onclick="removeItem(${i})">×</button>
+    <div class="item-row" data-item-index="${i}">
+      <div class="item-card-head">
+        <div class="item-card-heading">
+          <span class="item-card-index">${currentLang === 'zh' ? '項目' : 'Item'} ${String(i + 1).padStart(2, '0')}</span>
+          <span class="item-card-title" id="item-card-title-${i}">${esc(it.name || (currentLang === 'zh' ? '未命名項目' : 'Untitled item'))}</span>
+        </div>
+        <div class="item-card-actions">
+          <button type="button" class="item-action" onclick="moveItem(${i},-1)" ${i === 0 ? 'disabled' : ''}
+            title="${currentLang === 'zh' ? '上移' : 'Move up'}" aria-label="${currentLang === 'zh' ? '上移項目' : 'Move item up'}">↑</button>
+          <button type="button" class="item-action" onclick="moveItem(${i},1)" ${i === items.length - 1 ? 'disabled' : ''}
+            title="${currentLang === 'zh' ? '下移' : 'Move down'}" aria-label="${currentLang === 'zh' ? '下移項目' : 'Move item down'}">↓</button>
+          <button type="button" class="item-action" onclick="duplicateItem(${i})"
+            title="${currentLang === 'zh' ? '複製' : 'Duplicate'}" aria-label="${currentLang === 'zh' ? '複製項目' : 'Duplicate item'}">⧉</button>
+          <button type="button" class="item-action danger" onclick="removeItem(${i})"
+            title="${currentLang === 'zh' ? '刪除' : 'Delete'}" aria-label="${currentLang === 'zh' ? '刪除項目' : 'Delete item'}">×</button>
+        </div>
+      </div>
       <div class="item-grid">
-        <div>
+        <div class="item-name-field">
           <label class="field-label">${T[currentLang].itemNameLbl}</label>
           <input type="text" value="${esc(it.name)}" placeholder="${T[currentLang].itemNameLbl}"
-            oninput="items[${i}].name=this.value;update()">
+            oninput="items[${i}].name=this.value;updateItemCardTitle(${i},this.value);update()">
         </div>
-        <div>
-          <label class="field-label">${T[currentLang].itemPriceLbl}</label>
-          <input type="number" value="${it.price}" min="0"
-            oninput="items[${i}].price=+this.value;update()">
-        </div>
-        <div>
-          <label class="field-label">${T[currentLang].itemQtyLbl}</label>
-          <input type="number" value="${it.qty}" min="1"
-            oninput="items[${i}].qty=+this.value;update()">
-        </div>
-        <div>
-          <label class="field-label">${T[currentLang].itemUnitLbl}</label>
-          <div class="unit-wrap" id="unit-wrap-${i}">
-            <div class="unit-selected" onclick="toggleUnitDropdown(${i})">
-              ${it.unit || (currentLang==='zh'?'選擇單位':'select')}
-            </div>
-            <div class="unit-dropdown">
-              ${getUnits(currentLang).map(u =>
-                '<div class="unit-option'+(it.unit===u.value?' active':'')+'" onclick="selectUnit('+i+',\''+u.value+'\')">'+u.label+'</div>'
-              ).join('')}
-              <div class="unit-option${!getUnits(currentLang).find(u=>u.value===it.unit)?' active':''}" onclick="selectUnit(${i},'__custom__')">
-                ${currentLang==='zh'?'自訂…':'custom…'}
+        <div class="item-meta-grid">
+          <div>
+            <label class="field-label">${T[currentLang].itemPriceLbl}</label>
+            <input type="number" value="${it.price}" min="0" inputmode="decimal"
+              oninput="items[${i}].price=+this.value;update()">
+          </div>
+          <div>
+            <label class="field-label">${T[currentLang].itemQtyLbl}</label>
+            <input type="number" value="${it.qty}" min="1" inputmode="decimal"
+              oninput="items[${i}].qty=+this.value;update()">
+          </div>
+          <div>
+            <label class="field-label">${T[currentLang].itemUnitLbl}</label>
+            <div class="unit-wrap" id="unit-wrap-${i}">
+              <div class="unit-selected" onclick="toggleUnitDropdown(${i})">
+                ${it.unit || (currentLang==='zh'?'選擇單位':'select')}
               </div>
+              <div class="unit-dropdown">
+                ${getUnits(currentLang).map(u =>
+                  '<div class="unit-option'+(it.unit===u.value?' active':'')+'" onclick="selectUnit('+i+',\''+u.value+'\')">'+u.label+'</div>'
+                ).join('')}
+                <div class="unit-option${!getUnits(currentLang).find(u=>u.value===it.unit)?' active':''}" onclick="selectUnit(${i},'__custom__')">
+                  ${currentLang==='zh'?'自訂…':'custom…'}
+                </div>
+              </div>
+              ${!getUnits(currentLang).find(u=>u.value===it.unit)?`
+              <input class="unit-custom-input" type="text" value="${esc(it.unit)}" placeholder="${currentLang==='zh'?'輸入單位':'enter unit'}"
+                oninput="items[${i}].unit=this.value;update()">` : ''}
             </div>
-            ${!getUnits(currentLang).find(u=>u.value===it.unit)?`
-            <input class="unit-custom-input" type="text" value="${esc(it.unit)}" placeholder="${currentLang==='zh'?'輸入單位':'enter unit'}"
-              oninput="items[${i}].unit=this.value;update()">` : ''}
           </div>
         </div>
       </div>
       <div class="item-desc">
-        <input type="text" value="${esc(it.desc)}" placeholder="${T[currentLang].itemDescLbl}"
-          oninput="items[${i}].desc=this.value;update()">
+        <div class="field-label-row">
+          <label class="field-label" for="item-desc-${i}">${T[currentLang].itemDescLbl}</label>
+          <div class="format-toolbar" aria-label="${currentLang === 'zh' ? '項目說明文字格式' : 'Item description formatting'}">
+            <button type="button" class="format-btn format-bold"
+              title="${currentLang === 'zh' ? '粗體' : 'Bold'}" aria-label="${currentLang === 'zh' ? '粗體' : 'Bold'}"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('item-desc-${i}','bold')">B</button>
+            <button type="button" class="format-btn"
+              title="${currentLang === 'zh' ? '清除格式' : 'Clear formatting'}" aria-label="${currentLang === 'zh' ? '清除格式' : 'Clear formatting'}"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('item-desc-${i}','clear')">Tx</button>
+          </div>
+        </div>
+        <textarea id="item-desc-${i}" class="item-desc-textarea wrapped-single-line" rows="2" data-autogrow
+          onkeydown="preventWrappedFieldNewline(event)"
+          oninput="normalizeWrappedField(this);items[${i}].desc=this.value;update()"
+          placeholder="${T[currentLang].itemDescLbl}">${esc(it.desc)}</textarea>
       </div>
       <div class="item-subtotal">${T[currentLang].itemSubtotal(currencySymbolMap[g('qt-currency').value]||g('qt-currency').value, fmt(it.price * it.qty))}</div>
     </div>
   `).join('');
+  requestAnimationFrame(() => refreshAutoGrowTextareas(document));
 }
 
 function esc(s) {
-  return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function g(id) { return document.getElementById(id); }
@@ -2958,7 +3419,8 @@ function update() {
   const qtDocTitle = g('qt-doctitle').value || '報價單';
   const qtDate = fmtDate(g('qt-date').value);
   const qtValid = fmtDate(g('qt-valid').value);
-  const notes = (g('notes').value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const notes = g('notes').value || '';
+  const notesHtml = renderFormattedText(notes, true);
 
   const bankName = g('bank-name').value || '—';
   const bankAcct = g('bank-acct').value || '—';
@@ -2968,12 +3430,13 @@ function update() {
   const contactLine2 = g('contact-line2').value || '';
   const contactLine3 = g('contact-line3').value || '';
   const legalText = g('legal-text').value || '';
+  const legalHtml = renderFormattedText(legalText, true);
 
   const tableRows = items.map(it => `
     <tr>
       <td>
-        <div class="td-name">${it.name || '（未命名）'}</div>
-        ${it.desc ? '<div class="td-desc">' + it.desc + '</div>' : ''}
+        <div class="td-name">${esc(it.name || '（未命名）')}</div>
+        ${it.desc ? '<div class="td-desc">' + renderInlineFormatting(it.desc) + '</div>' : ''}
       </td>
       <td class="r">${fmt(it.price)}</td>
       <td class="r">${it.qty}</td>
@@ -3038,7 +3501,7 @@ function update() {
       </div>
     </div>
 
-    ${notes ? `<div class="qt-notes"><span>${T[currentLang].pvNotes}</span><p>${notes}</p></div>` : ''}
+    ${notes ? `<div class="qt-notes"><span>${T[currentLang].pvNotes}</span><div class="qt-rich-text">${notesHtml}</div></div>` : ''}
 
     ${showSignature ? `
     <div class="qt-signature-section">
@@ -3067,7 +3530,7 @@ function update() {
       </div>
       <div>
         <span>${T[currentLang].pvLegal}</span>
-        <p>${legalText}</p>
+        <div class="qt-rich-text">${legalHtml}</div>
       </div>
     </footer>
   `;
