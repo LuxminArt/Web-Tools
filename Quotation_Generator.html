@@ -3578,6 +3578,47 @@ function createQuotationTable(sourceTable) {
   return table;
 }
 
+function appendTotalsWithPagination(previewEl, page, pageTable, sourceTable, totalsBlock, context) {
+  if (!totalsBlock) return { page, pageTable };
+
+  let totalsClone = totalsBlock.cloneNode(true);
+  page.appendChild(totalsClone);
+  if (!quotationPageOverflows(page) || tryCompactQuotationPage(page)) {
+    return { page, pageTable };
+  }
+
+  totalsClone.remove();
+  const pageBody = pageTable?.querySelector('tbody');
+  const lastRow = pageBody?.lastElementChild;
+
+  if (lastRow) {
+    const movedRow = lastRow.cloneNode(true);
+    lastRow.remove();
+    if (!pageBody.children.length) pageTable.remove();
+
+    page = createQuotationPage(previewEl, context, true);
+    pageTable = createQuotationTable(sourceTable);
+    pageTable.querySelector('tbody').appendChild(movedRow);
+    page.appendChild(pageTable);
+
+    totalsClone = totalsBlock.cloneNode(true);
+    page.appendChild(totalsClone);
+    if (!quotationPageOverflows(page) || tryCompactQuotationPage(page)) {
+      return { page, pageTable };
+    }
+
+    // If the final row and totals cannot share a page, keep the row intact and
+    // put only the totals on the next page instead of allowing overlap.
+    totalsClone.remove();
+    if (quotationPageOverflows(page)) tryCompactQuotationPage(page, Number.POSITIVE_INFINITY);
+  }
+
+  page = createQuotationPage(previewEl, context, true);
+  pageTable = null;
+  page.appendChild(totalsBlock.cloneNode(true));
+  return { page, pageTable };
+}
+
 function appendClosingBlocksWithPagination(previewEl, page, sourceBlocks, context) {
   if (!sourceBlocks.length) return page;
 
@@ -3609,7 +3650,7 @@ function paginateQuotationPreview(previewEl, sourceEl, context) {
   const sourceTable = sourceEl.querySelector('.qt-table');
   const sourceRows = sourceTable ? [...sourceTable.querySelectorAll('tbody > tr')] : [];
   const firstPageSelectors = ['.qt-header', '.qt-meta', '.qt-parties', '.qt-validity'];
-  const closingSelectors = ['.qt-totals', '.qt-notes', '.qt-signature-section', '.qt-footer'];
+  const closingSelectors = ['.qt-notes', '.qt-signature-section', '.qt-footer'];
 
   let page = createQuotationPage(previewEl, context, false);
   firstPageSelectors.forEach(selector => {
@@ -3617,8 +3658,9 @@ function paginateQuotationPreview(previewEl, sourceEl, context) {
     if (node) page.appendChild(node.cloneNode(true));
   });
 
+  let pageTable = null;
   if (sourceTable) {
-    let pageTable = createQuotationTable(sourceTable);
+    pageTable = createQuotationTable(sourceTable);
     let pageBody = pageTable.querySelector('tbody');
     page.appendChild(pageTable);
 
@@ -3637,6 +3679,17 @@ function paginateQuotationPreview(previewEl, sourceEl, context) {
       pageBody.appendChild(sourceRow.cloneNode(true));
     });
   }
+
+  const totalsResult = appendTotalsWithPagination(
+    previewEl,
+    page,
+    pageTable,
+    sourceTable,
+    sourceEl.querySelector('.qt-totals'),
+    context
+  );
+  page = totalsResult.page;
+  pageTable = totalsResult.pageTable;
 
   const closingBlocks = closingSelectors
     .map(selector => sourceEl.querySelector(selector))
