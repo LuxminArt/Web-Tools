@@ -1009,6 +1009,12 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 }
 .datepicker-wrap.open .datepicker-popup { display: block; }
 
+/* Keep the popup for a date field in the right column inside the edit panel. */
+.field-row > :last-child .datepicker-popup {
+  left: auto;
+  right: 0;
+}
+
 .dp-nav {
   display: flex;
   align-items: center;
