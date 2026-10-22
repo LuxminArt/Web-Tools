@@ -2218,6 +2218,18 @@ function importMd() {
   setTimeout(() => document.getElementById('md-confirm').textContent = '', 2000);
 }
 
+// 匯出檔名（不含副檔名）：編號_日期，.md 與 PDF 共用
+function exportBaseName() {
+  const docNo = (document.getElementById('qt-no').value || '').trim().replace(/[\/\\:*?"<>|\s]+/g, '-');
+  const stamp = new Date().toISOString().slice(0, 10);
+  return (docNo || '報價單') + '_' + stamp;
+}
+
+// 匯出 PDF：瀏覽器以 document.title 作為預設檔名，列印期間暫時替換
+const defaultTitle = document.title;
+window.addEventListener('beforeprint', () => { document.title = exportBaseName(); });
+window.addEventListener('afterprint', () => { document.title = defaultTitle; });
+
 // 匯出：將目前所有欄位以 Markdown 純文字下載成 .md 檔
 function downloadMd() {
   generateMd(); // 先以最新欄位內容重新產生
@@ -2225,10 +2237,8 @@ function downloadMd() {
   const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const docNo = (document.getElementById('qt-no').value || '').trim().replace(/[\/\\:*?"<>|\s]+/g, '-');
-  const stamp = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = (docNo || '報價單') + '_' + stamp + '.md';
+  a.download = exportBaseName() + '.md';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
