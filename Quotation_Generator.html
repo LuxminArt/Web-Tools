@@ -215,8 +215,8 @@ select { cursor: pointer; }
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding-bottom: 9px;
-  border-bottom: 0.5px solid var(--border);
+  min-height: 28px;
+  margin-bottom: -4px;
 }
 .item-card-heading {
   display: flex;
@@ -231,21 +231,16 @@ select { cursor: pointer; }
   color: rgba(240,240,235,0.3);
   text-transform: uppercase;
 }
-.item-card-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(240,240,235,0.78);
-}
 .item-card-actions {
   display: flex;
   align-items: center;
   gap: 3px;
   flex-shrink: 0;
 }
+.item-card-actions { opacity: 0; transition: opacity 0.15s; }
+.item-row:hover .item-card-actions,
+.item-row:focus-within .item-card-actions { opacity: 1; }
+@media (hover: none) { .item-card-actions { opacity: 1; } }
 .item-action {
   width: 28px;
   height: 28px;
@@ -275,6 +270,7 @@ select { cursor: pointer; }
   background: rgba(255,90,90,0.08);
   border-color: rgba(255,90,90,0.18);
 }
+.item-name-field input { font-weight: 500; }
 .item-row .item-grid {
   display: flex;
   flex-direction: column;
@@ -785,6 +781,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 .unit-wrap { position: relative; }
 .unit-selected {
   width: 100%;
+  min-height: 36px;   /* 與單價、數量欄位同高 */
   background: var(--input-bg);
   border: 0.5px solid var(--border-mid);
   color: var(--text);
@@ -938,16 +935,100 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
 
 /* ── PANEL TABS ── */
+.panel-head {
+  margin: -20px 0 -6px;   /* 往上蓋住面板的 20px padding，捲動時上方不會露出內容 */
+  padding-top: 20px;
+  flex-shrink: 0;
+  background: var(--bg);
+  position: sticky;
+  top: -20px;
+  z-index: 10;
+}
 .panel-tabs {
   display: flex;
   border-bottom: 0.5px solid var(--border-mid);
-  margin-bottom: 4px;
-  flex-shrink: 0;
-  background: var(--surface);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
+
+/* 欄位搜尋 */
+.field-search { position: relative; margin-top: 12px; }
+.field-search input {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 44px 0 30px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.field-search-icon {
+  position: absolute; left: 10px; top: 9px;
+  width: 14px; height: 14px;
+  fill: none; stroke: rgba(240,240,235,0.4); stroke-width: 1.5; stroke-linecap: round;
+  pointer-events: none;
+}
+.field-search kbd {
+  position: absolute; right: 8px; top: 8px;
+  padding: 0 5px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 10px;
+  line-height: 15px;
+  color: rgba(240,240,235,0.4);
+  pointer-events: none;
+}
+.field-search input:focus ~ kbd { visibility: hidden; }
+.field-search-results {
+  display: none;
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 0.5px solid var(--border-mid);
+  border-radius: 6px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  padding: 4px;
+}
+.field-search-results.open { display: block; }
+.field-search-result {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+.field-search-result small { font-size: 10.5px; color: rgba(240,240,235,0.4); white-space: nowrap; }
+.field-search-result.active { background: rgba(240,240,235,0.08); }
+.field-search-result mark { background: none; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.field-search-empty { padding: 10px; font-size: 11px; color: var(--muted); }
+
+/* 區塊導覽：單行可橫向捲動，標示目前所在區塊 */
+.section-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 10px 0 10px;
+  border-bottom: 0.5px solid var(--border);
+}
+.section-nav::-webkit-scrollbar { display: none; }
+.section-nav:empty { display: none; }
+.section-nav button {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 999px;
+  background: none;
+  color: rgba(240,240,235,0.5);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.section-nav button:hover { color: var(--text); border-color: rgba(240,240,235,0.3); }
+.section-nav button.active { background: var(--text); border-color: transparent; color: #0e0e0e; }
+
+/* 捲動、聚焦欄位時避開固定標頭（高度由 JS 量測） */
+.panel { scroll-padding-top: var(--panel-head-h, 0px); }
 .panel-tab {
   flex: 1;
   padding: 10px 0;
@@ -970,8 +1051,49 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 }
 .panel-tab:hover:not(.active) { color: rgba(240,240,235,0.6); }
 
-#panel-edit { display: flex; flex-direction: column; gap: 20px; }
 #panel-text { display: none; flex-direction: column; gap: 12px; }
+.panel-page { display: none; flex-direction: column; }
+#panel-edit { display: flex; }
+
+/* 面板分區：不收合，以細線分隔、標題標示層級 */
+.panel-intro {
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: rgba(240,240,235,0.38);
+  margin-bottom: 4px;
+}
+.panel-group-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(240,240,235,0.85);
+  padding: 22px 0 2px;
+}
+.panel-section {
+  padding: 18px 0 20px;
+  border-top: 0.5px solid var(--border);
+}
+.panel-intro + .panel-section,
+.panel-group-label + .panel-section { border-top: none; padding-top: 10px; }
+.panel-section .section-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(240,240,235,0.5);
+  margin-bottom: 10px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.panel-section .field-label-row .section-title { margin-bottom: 0; }
+.panel-section .field-label-row { margin-bottom: 10px; }
+.panel-section .btn-add { margin-top: 8px; }
+
+/* 格式工具列與提示：只在編輯該段文字時出現 */
+.has-format .format-toolbar,
+.item-desc .format-toolbar { opacity: 0; transition: opacity 0.15s; }
+.has-format:hover .format-toolbar, .has-format:focus-within .format-toolbar,
+.item-desc:hover .format-toolbar, .item-desc:focus-within .format-toolbar { opacity: 1; }
+.has-format .format-hint { display: none; }
+.has-format:focus-within .format-hint { display: block; }
 
 /* Markdown editor area */
 .md-textarea {
@@ -1029,7 +1151,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   transition: opacity 0.3s;
 }
 
-/* 資料 / 備份：清除紀錄（放在最下方，與一般操作分開） */
+/* 備份分頁：清除紀錄（放在最下方，與一般操作分開） */
 .data-danger {
   margin-top: 16px;
   padding-top: 16px;
@@ -1092,6 +1214,35 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   100%    { border-color: var(--border-mid); box-shadow: none; }
 }
 .field-attention { animation: field-attention 1.6s ease-out; }
+
+/* 從預覽點過來時：中性色短暫標示目標欄位 */
+@keyframes field-locate {
+  0%, 50% { border-color: rgba(240,240,235,0.7); box-shadow: 0 0 0 3px rgba(240,240,235,0.12); }
+  100%    { border-color: var(--border-mid); box-shadow: none; }
+}
+.field-locate { animation: field-locate 1.2s ease-out; }
+
+/* 預覽上可點擊編輯的區塊：滑過時淡色底標示（表格列標在儲存格上） */
+.qt [data-edit] { cursor: pointer; border-radius: 2px; transition: background-color 0.12s, box-shadow 0.12s; }
+.qt [data-edit]:not(tr):hover,
+.qt tr[data-edit]:hover > td {
+  background-color: color-mix(in srgb, currentColor 6%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 6%, transparent);
+}
+.qt tr[data-edit]:hover > td { box-shadow: none; }
+
+/* 匯出按鈕上的快捷鍵 */
+.btn-print kbd {
+  margin-left: 8px;
+  padding: 1px 5px;
+  border: 0.5px solid rgba(14,14,14,0.25);
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba(14,14,14,0.6);
+}
 
 /* 預覽依寬度縮放：外框佔縮放後的尺寸，#preview 以 transform 縮小 */
 .preview-scaler { flex-shrink: 0; }
@@ -1234,26 +1385,6 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 .qt .qt-footer b { color: color-mix(in srgb, var(--doc-text) 75%, transparent) !important; }
 
 
-/* Sections inside collapsible groups */
-.collapsible-body .section-title {
-  font-size: 9.5px;
-  letter-spacing: 0.15em;
-  color: rgba(240,240,235,0.34);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.collapsible-group {
-  border-bottom: 0.5px solid var(--border);
-  padding-bottom: 10px;
-  margin-bottom: 2px;
-}
-.collapsible-header .section-title {
-  font-size: 10px;
-  letter-spacing: 0.13em;
-}
-
 /* ── PRINT ── */
 @media print {
   * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -1291,37 +1422,6 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   #preview { transform: none !important; }
   .export-check { display: none !important; }
 }
-
-/* ── COLLAPSIBLE SECTIONS ── */
-.collapsible-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  user-select: none;
-  padding: 2px 0;
-}
-.collapsible-arrow {
-  font-size: 10px;
-  color: var(--muted);
-  transition: transform 0.22s ease;
-  flex-shrink: 0;
-  margin-left: 6px;
-  display: inline-block;
-}
-.collapsible-arrow.open { transform: rotate(180deg); }
-.collapsible-body {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.22s ease;
-}
-.collapsible-body.open {
-  max-height: 3000px;
-  opacity: 1;
-  overflow: visible;
-}
-
 
 /* ── CUSTOM DATE PICKER ── */
 .datepicker-wrap {
@@ -1503,7 +1603,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <span id="save-indicator" style="font-size:9px;letter-spacing:0.08em;color:rgba(240,240,235,0.45);opacity:0;transition:opacity 0.35s;display:flex;align-items:center;"></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-    <button class="btn-print" onclick="exportPdf()">列印 / 匯出 PDF</button>
+    <button class="btn-print" onclick="exportPdf()">列印 / 匯出 PDF<kbd id="print-shortcut">⌘P</kbd></button>
   </div>
 </div>
 
@@ -1512,10 +1612,21 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   <!-- LEFT PANEL -->
   <div class="panel">
 
-    <!-- TABS -->
-    <div class="panel-tabs">
-      <button class="panel-tab active" id="tab-edit" onclick="switchTab('edit')">編輯</button>
-      <button class="panel-tab" id="tab-text" onclick="switchTab('text')">資料 / 備份</button>
+    <!-- 固定標頭：分頁、欄位搜尋、區塊導覽 -->
+    <div class="panel-head" id="panel-head">
+      <div class="panel-tabs">
+        <button class="panel-tab active" id="tab-edit" onclick="switchTab('edit')">報價內容</button>
+        <button class="panel-tab" id="tab-settings" onclick="switchTab('settings')">範本設定</button>
+        <button class="panel-tab" id="tab-text" onclick="switchTab('text')">備份</button>
+      </div>
+      <div class="field-search">
+        <svg class="field-search-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+        <input type="text" id="field-search" placeholder="搜尋欄位" autocomplete="off" spellcheck="false"
+          role="combobox" aria-expanded="false" aria-controls="field-search-results" aria-label="搜尋欄位">
+        <kbd id="field-search-shortcut">⌘K</kbd>
+        <div class="field-search-results" id="field-search-results" role="listbox"></div>
+      </div>
+      <nav class="section-nav" id="section-nav" aria-label="區塊導覽"></nav>
     </div>
 
     <!-- TEXT TAB -->
@@ -1539,490 +1650,398 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
     </div>
 
-    <!-- EDIT TAB -->
-    <div id="panel-edit">
+    <!-- 報價內容：每張報價都會改的欄位 -->
+    <div id="panel-edit" class="panel-page">
+      <p class="panel-intro">點右側報價單上的內容，可直接跳到對應欄位。</p>
 
-    <!-- GROUP: 外觀設定 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-appearance')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">外觀設定</div>
-        <span class="collapsible-arrow" id="arrow-group-appearance">▾</span>
-      </div>
-      <div class="collapsible-body" id="body-group-appearance">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 外觀設定 -->
-    <div>
-      <div class="section-title">外觀設定</div>
-      <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
-        <button id="btn-dark" onclick="setTheme('dark')"
-          style="flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s;">
-          Dark
-        </button>
-        <button id="btn-light" onclick="setTheme('light')"
-          style="flex:1;padding:8px;background:#f0f0eb;color:#0e0e0e;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all 0.15s;">
-          Light
-        </button>
-      </div>
-    </div>
-
-    <!-- 語言設定 -->
-    <div>
-      <div class="section-title">語言 / Language</div>
-      <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
-        <button id="btn-zh" onclick="setLang('zh')"
-          style="flex:1;padding:8px;background:#f0f0eb;color:#0e0e0e;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all 0.15s;">
-          中文
-        </button>
-        <button id="btn-en" onclick="setLang('en')"
-          style="flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s;">
-          English
-        </button>
-      </div>
-    </div>
-
-    <!-- Logo 設定 -->
-    <div>
-      <div class="section-title" id="sec-logo">Logo 設定</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label">Dark Mode Logo</label>
-          <div class="logo-upload-area" id="logo-dark-area">
-            <input type="file" accept="image/*" onchange="handleLogoUpload(event,'dark')" onclick="event.stopPropagation()">
-            <div id="logo-dark-thumb-wrap">
-              <div class="logo-upload-placeholder">☾</div>
+      <section class="panel-section" data-nav="報價資訊">
+        <div class="section-title" id="sec-doc">報價資訊</div>
+        <div class="field-group">
+          <div class="field-row">
+            <div>
+              <label class="field-label" id="lbl-docno">文件編號</label>
+              <input type="text" id="qt-no" oninput="markDirty('qt-no');update()" value="QT-2026-001">
             </div>
-            <div class="logo-upload-info">
-              <strong id="logo-dark-filename">使用預設 Logo</strong>
-              <span>點擊上傳圖片</span>
+            <div>
+              <label class="field-label" id="lbl-currency">幣別</label>
+              <select id="qt-currency" oninput="update()" onchange="update()">
+                <option value="NT$">新台幣 TWD　NT$</option>
+                <option value="USD">美元 USD　$</option>
+                <option value="HKD">港元 HKD　HK$</option>
+                <option value="MOP">澳門幣 MOP　MOP$</option>
+                <option value="CNY">人民幣 CNY　¥</option>
+                <option value="KRW">韓元 KRW　₩</option>
+                <option value="JPY">日圓 JPY　¥</option>
+                <option value="EUR">歐元 EUR　€</option>
+                <option value="GBP">英鎊 GBP　£</option>
+                <option value="MYR">馬來西亞令吉 MYR　RM</option>
+                <option value="SGD">新加坡元 SGD　S$</option>
+                <option value="THB">泰銖 THB　฿</option>
+              </select>
             </div>
-            <button class="logo-reset" id="logo-dark-reset" onclick="resetLogo('dark');event.stopPropagation();" style="display:none">✕ 重設</button>
           </div>
-        </div>
-        <div>
-          <label class="field-label">Light Mode Logo</label>
-          <div class="logo-upload-area" id="logo-light-area">
-            <input type="file" accept="image/*" onchange="handleLogoUpload(event,'light')" onclick="event.stopPropagation()">
-            <div id="logo-light-thumb-wrap">
-              <div class="logo-upload-placeholder">☀</div>
-            </div>
-            <div class="logo-upload-info">
-              <strong id="logo-light-filename">使用預設 Logo</strong>
-              <span>點擊上傳圖片</span>
-            </div>
-            <button class="logo-reset" id="logo-light-reset" onclick="resetLogo('light');event.stopPropagation();" style="display:none">✕ 重設</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 字體設定 -->
-    <div>
-      <div class="section-title">字體</div>
-            <div class="font-grid" id="font-grid"></div>
-    </div>
-
-    <!-- 顏色設定 -->
-    <div>
-      <div class="section-title">顏色</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div>
-          <label class="field-label" style="margin-bottom:6px;">背景色</label>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <input type="color" id="color-bg" value="#0a0a0a" oninput="setDocColor('bg',this.value)"
-              style="width:32px;height:32px;padding:2px;border:0.5px solid var(--border-mid);border-radius:3px;background:var(--input-bg);cursor:pointer;flex-shrink:0;">
-            <div id="bg-swatches" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
-          </div>
-        </div>
-        <div>
-          <label class="field-label" style="margin-bottom:6px;">主色（文字）</label>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <input type="color" id="color-text" value="#f5f5f0" oninput="setDocColor('text',this.value)"
-              style="width:32px;height:32px;padding:2px;border:0.5px solid var(--border-mid);border-radius:3px;background:var(--input-bg);cursor:pointer;flex-shrink:0;">
-            <div id="text-swatches" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
-          </div>
-        </div>
-        <div>
-          <label class="field-label" style="margin-bottom:6px;">快速配色</label>
-          <div id="combo-swatches" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
-        </div>
-        <button onclick="resetDocColors()"
-          style="font-size:10px;color:var(--muted);background:none;border:0.5px solid var(--border-mid);
-                 padding:5px 0;border-radius:3px;cursor:pointer;font-family:inherit;width:100%;">重設預設值</button>
-      </div>
-    </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- GROUP: 報價資訊 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-doc-info')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">報價資訊</div>
-        <span class="collapsible-arrow" id="arrow-group-doc-info">▾</span>
-      </div>
-      <div class="collapsible-body" id="body-group-doc-info">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 報價資訊 -->
-    <div>
-      <div class="section-title" id="sec-doc">報價資訊</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label" id="lbl-doctitle">文件標題</label>
-          <input type="text" id="qt-doctitle" oninput="markDirty('qt-doctitle');update()" value="報價單">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-docno">文件編號</label>
-          <input type="text" id="qt-no" oninput="markDirty('qt-no');update()" value="QT-2026-001">
-        </div>
-        <div class="field-row">
-          <div>
-            <label class="field-label" id="lbl-date">報價日期</label>
-            <div class="datepicker-wrap" id="dp-wrap-qt-date">
-              <input type="hidden" id="qt-date" oninput="update()">
-              <div class="datepicker-face" onclick="toggleDatepicker('qt-date')">
-                <span id="dp-face-qt-date">選擇日期</span>
+          <div class="field-row">
+            <div>
+              <label class="field-label" id="lbl-date">報價日期</label>
+              <div class="datepicker-wrap" id="dp-wrap-qt-date">
+                <input type="hidden" id="qt-date" oninput="update()">
+                <div class="datepicker-face" onclick="toggleDatepicker('qt-date')">
+                  <span id="dp-face-qt-date">選擇日期</span>
+                </div>
+                <div class="datepicker-popup" id="dp-popup-qt-date"></div>
               </div>
-              <div class="datepicker-popup" id="dp-popup-qt-date"></div>
+            </div>
+            <div>
+              <label class="field-label" id="lbl-valid">有效期限</label>
+              <div class="datepicker-wrap" id="dp-wrap-qt-valid">
+                <input type="hidden" id="qt-valid" oninput="update()">
+                <div class="datepicker-face" onclick="toggleDatepicker('qt-valid')">
+                  <span id="dp-face-qt-valid">選擇日期</span>
+                </div>
+                <div class="datepicker-popup" id="dp-popup-qt-valid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="客戶">
+        <div class="section-title" id="sec-to">客戶資訊</div>
+        <div class="field-group">
+          <div>
+            <label class="field-label" id="lbl-to-name">公司／姓名</label>
+            <input type="text" id="to-name" oninput="markDirty('to-name');update()" placeholder="客戶公司名稱">
+          </div>
+          <div class="field-row">
+            <div>
+              <label class="field-label" id="lbl-to-contact">聯絡人</label>
+              <input type="text" id="to-contact" oninput="markDirty('to-contact');update()" placeholder="聯絡人姓名">
+            </div>
+            <div>
+              <label class="field-label" id="lbl-to-email">電子信箱</label>
+              <input type="text" id="to-email" oninput="markDirty('to-email');update()" placeholder="client@email.com">
             </div>
           </div>
           <div>
-            <label class="field-label" id="lbl-valid">有效期限</label>
-            <div class="datepicker-wrap" id="dp-wrap-qt-valid">
-              <input type="hidden" id="qt-valid" oninput="update()">
-              <div class="datepicker-face" onclick="toggleDatepicker('qt-valid')">
-                <span id="dp-face-qt-valid">選擇日期</span>
-              </div>
-              <div class="datepicker-popup" id="dp-popup-qt-valid"></div>
-            </div>
+            <label class="field-label" id="lbl-to-addr">地址</label>
+            <textarea class="wrapped-single-line" id="to-addr" rows="2" data-autogrow
+              onkeydown="preventWrappedFieldNewline(event)"
+              oninput="normalizeWrappedField(this);markDirty('to-addr');update()"
+              placeholder="客戶地址"></textarea>
           </div>
         </div>
-        <div>
-          <label class="field-label" id="lbl-currency">幣別</label>
-          <select id="qt-currency" oninput="update()" onchange="update()">
-            <option value="NT$">新台幣 TWD　NT$</option>
-            <option value="USD">美元 USD　$</option>
-            <option value="HKD">港元 HKD　HK$</option>
-            <option value="MOP">澳門幣 MOP　MOP$</option>
-            <option value="CNY">人民幣 CNY　¥</option>
-            <option value="KRW">韓元 KRW　₩</option>
-            <option value="JPY">日圓 JPY　¥</option>
-            <option value="EUR">歐元 EUR　€</option>
-            <option value="GBP">英鎊 GBP　£</option>
-            <option value="MYR">馬來西亞令吉 MYR　RM</option>
-            <option value="SGD">新加坡元 SGD　S$</option>
-            <option value="THB">泰銖 THB　฿</option>
-          </select>
-        </div>
-      </div>
-    </div>
+      </section>
 
+      <section class="panel-section" data-nav="服務項目">
+        <div class="section-title" id="sec-items">服務項目</div>
+        <div id="items-list" class="field-group"></div>
+        <button class="btn-add" id="btn-add-item" onclick="addItem()">＋ 新增項目</button>
+        <div class="item-undo-toast" id="item-undo-toast" role="status" aria-live="polite">
+          <span id="item-undo-message">已刪除項目</span>
+          <button type="button" onclick="undoRemoveItem()">復原</button>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- GROUP: 報價方（我方） -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-from')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">報價方（我方）</div>
-        <span class="collapsible-arrow" id="arrow-group-from">▾</span>
-      </div>
-      <div class="collapsible-body" id="body-group-from">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 報價方 -->
-    <div>
-      <div class="section-title" id="sec-from">報價方（我方）</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label" id="lbl-from-name">公司名稱</label>
-          <input type="text" id="from-name" oninput="markDirty('from-name');update()" placeholder="公司名稱 / Company Name">
+      <section class="panel-section" data-nav="折扣">
+        <div class="section-title" id="sec-discount">折扣</div>
+        <div style="display:grid;grid-template-columns:1fr 100px;gap:8px;align-items:center;">
+          <div>
+            <label class="field-label" id="lbl-disc-type">折扣類型</label>
+            <select id="disc-type" oninput="update()">
+              <option value="none">無折扣</option>
+              <option value="pct">百分比 (%)</option>
+              <option value="fixed">固定金額</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" id="lbl-disc-val">數值</label>
+            <input type="number" id="disc-val" value="0" min="0" oninput="markDirty('disc-val');update()">
+          </div>
         </div>
-        <div>
-          <label class="field-label" id="lbl-from-email">電子信箱</label>
-          <input type="text" id="from-email" oninput="markDirty('from-email');update()" placeholder="hello@yourcompany.com">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-from-phone">電話</label>
-          <input type="text" id="from-phone" oninput="markDirty('from-phone');update()" placeholder="+886 900-000-000">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-from-addr">地址</label>
-          <textarea class="wrapped-single-line" id="from-addr" rows="2" data-autogrow
-            onkeydown="preventWrappedFieldNewline(event)"
-            oninput="normalizeWrappedField(this);markDirty('from-addr');update()"
-            placeholder="城市、區域、街道地址"></textarea>
-        </div>
-      </div>
-    </div>
+      </section>
 
+      <section class="panel-section has-format" data-nav="備註">
+        <div class="field-label-row">
+          <div class="section-title" id="sec-notes">備註</div>
+          <div class="format-toolbar" aria-label="備註文字格式">
+            <button type="button" class="format-btn format-bold" title="粗體" aria-label="粗體"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','bold')">B</button>
+            <button type="button" class="format-btn" title="項目符號" aria-label="項目符號"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','bullet')">•</button>
+            <button type="button" class="format-btn" title="編號清單" aria-label="編號清單"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','number')">1.</button>
+            <button type="button" class="format-btn" title="清除格式" aria-label="清除格式"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','clear')">Tx</button>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <!-- GROUP: 客戶資訊 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-to')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">客戶資訊</div>
-        <span class="collapsible-arrow open" id="arrow-group-to">▾</span>
-      </div>
-      <div class="collapsible-body open" id="body-group-to">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 客戶 -->
-    <div>
-      <div class="section-title" id="sec-to">客戶資訊</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label" id="lbl-to-name">公司／姓名</label>
-          <input type="text" id="to-name" oninput="markDirty('to-name');update()" placeholder="客戶公司名稱">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-to-contact">聯絡人</label>
-          <input type="text" id="to-contact" oninput="markDirty('to-contact');update()" placeholder="聯絡人姓名">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-to-email">電子信箱</label>
-          <input type="text" id="to-email" oninput="markDirty('to-email');update()" placeholder="client@email.com">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-to-addr">地址</label>
-          <textarea class="wrapped-single-line" id="to-addr" rows="2" data-autogrow
-            onkeydown="preventWrappedFieldNewline(event)"
-            oninput="normalizeWrappedField(this);markDirty('to-addr');update()"
-            placeholder="客戶地址"></textarea>
-        </div>
-      </div>
-    </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- GROUP: 服務項目 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-items')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">服務項目</div>
-        <span class="collapsible-arrow open" id="arrow-group-items">▾</span>
-      </div>
-      <div class="collapsible-body open" id="body-group-items">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 服務項目 -->
-    <div>
-      <div class="section-title" id="sec-items">服務項目</div>
-      <div class="field-help" style="margin-top:-3px;margin-bottom:9px;">名稱改為全寬編輯；說明會依內容自動增高，資料仍以純文字儲存。</div>
-      <div id="items-list" class="field-group"></div>
-      <button class="btn-add" id="btn-add-item" onclick="addItem()">＋ 新增項目</button>
-      <div class="item-undo-toast" id="item-undo-toast" role="status" aria-live="polite">
-        <span id="item-undo-message">已刪除項目</span>
-        <button type="button" onclick="undoRemoveItem()">復原</button>
-      </div>
-    </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- GROUP: 金額與付款 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-payment')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">金額與付款</div>
-        <span class="collapsible-arrow" id="arrow-group-payment">▾</span>
-      </div>
-      <div class="collapsible-body" id="body-group-payment">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-
-    <!-- 稅率 -->
-    <div>
-      <div class="section-title" id="sec-tax">稅率設定</div>
-      <div class="tax-row">
-        <label id="lbl-taxrate">營業稅率 (%)</label>
-        <input type="number" id="tax-rate" oninput="update()" value="5" min="0" max="100" step="0.1">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;margin-top:8px;">
-        <div>
-          <label class="field-label" id="lbl-tax-decimals">稅金小數位數</label>
-          <input type="number" id="tax-decimals" value="0" min="0" max="6" step="1" oninput="update()">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-tax-round">進位方式</label>
-          <select id="tax-round" oninput="update()">
-            <option value="round">四捨五入</option>
-            <option value="ceil">無條件進位</option>
-            <option value="floor">無條件捨去</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- 折扣 -->
-    <div>
-      <div class="section-title" id="sec-discount">折扣設定</div>
-      <div style="display:grid;grid-template-columns:1fr 100px;gap:8px;align-items:center;">
-        <div>
-          <label class="field-label" id="lbl-disc-type">折扣類型</label>
-          <select id="disc-type" oninput="update()">
-            <option value="none">無折扣</option>
-            <option value="pct">百分比 (%)</option>
-            <option value="fixed">固定金額</option>
-          </select>
-        </div>
-        <div>
-          <label class="field-label" id="lbl-disc-val">數值</label>
-          <input type="number" id="disc-val" value="0" min="0" oninput="markDirty('disc-val');update()">
-        </div>
-      </div>
-    </div>
-
-    <!-- 付款條件 -->
-    <div>
-      <div class="section-title" id="sec-payterms">付款條件</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label" id="lbl-payterms">條件</label>
-          <select id="pay-terms" oninput="update()">
-            <option value="due_on_receipt">收到即付 / Due on Receipt</option>
-            <option value="net7">Net 7（7 天內付清）</option>
-            <option value="net14">Net 14（14 天內付清）</option>
-            <option value="net30">Net 30（30 天內付清）</option>
-            <option value="net60">Net 60（60 天內付清）</option>
-            <option value="50_50">50% 訂金 + 50% 交件後</option>
-            <option value="custom">自訂</option>
-          </select>
-        </div>
-        <div id="pay-terms-custom-wrap" style="display:none;">
-          <label class="field-label">自訂內容</label>
-          <textarea class="wrapped-single-line" id="pay-terms-custom" rows="2" data-autogrow
-            onkeydown="preventWrappedFieldNewline(event)"
-            oninput="normalizeWrappedField(this);markDirty('pay-terms-custom');update()"
-            placeholder="請輸入付款條件"></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- 簽名設定 -->
-    <div>
-      <div class="section-title" id="sec-sig">簽名欄位</div>
-      <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
-        <button id="btn-sig-show" onclick="setSig(true)"
-          style="flex:1;padding:8px;background:#f0f0eb;color:#0e0e0e;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;">
-          顯示
-        </button>
-        <button id="btn-sig-hide" onclick="setSig(false)"
-          style="flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;">
-          隱藏
-        </button>
-      </div>
-    </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- GROUP: 備註 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-notes')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">備註</div>
-        <span class="collapsible-arrow" id="arrow-group-notes">▾</span>
-      </div>
-      <div class="collapsible-body" id="body-group-notes">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 備註 -->
-    <div>
-      <div class="field-label-row" style="margin-bottom:6px;">
-        <div class="section-title" id="sec-notes" style="margin-bottom:0;">備註</div>
-        <div class="format-toolbar" aria-label="備註文字格式">
-          <button type="button" class="format-btn format-bold" title="粗體" aria-label="粗體"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','bold')">B</button>
-          <button type="button" class="format-btn" title="項目符號" aria-label="項目符號"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','bullet')">•</button>
-          <button type="button" class="format-btn" title="編號清單" aria-label="編號清單"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','number')">1.</button>
-          <button type="button" class="format-btn" title="清除格式" aria-label="清除格式"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('notes','clear')">Tx</button>
-        </div>
-      </div>
-      <textarea class="long-textarea" id="notes" data-autogrow oninput="autoGrowTextarea(this);markDirty('notes');update()" placeholder="付款條件、修改次數等條款...">· 正式委託後需支付 50% 訂金，餘款於最終交付後 7 個工作日內付清。
+        <textarea class="long-textarea" id="notes" data-autogrow oninput="autoGrowTextarea(this);markDirty('notes');update()" placeholder="付款條件、修改次數等條款...">· 正式委託後需支付 50% 訂金，餘款於最終交付後 7 個工作日內付清。
 · 修改次數：每項目含 2 次主要修改，超出部分另計。</textarea>
-      <div class="format-hint">選取文字後套用粗體；清單格式會保留在資料備份中。</div>
-    </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- GROUP: 頁面底部 -->
-    <div class="collapsible-group">
-      <div class="collapsible-header" onclick="toggleGroup('group-footer')">
-        <div class="section-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">頁面底部</div>
-        <span class="collapsible-arrow" id="arrow-group-footer">▾</span>
-      </div>
-      <div class="collapsible-body" id="body-group-footer">
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:12px;">
-    <!-- 聯絡方式 -->
-    <div>
-      <div class="section-title" id="sec-contact">聯絡方式（頁底）</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label" id="lbl-contact1">第一行</label>
-          <input type="text" id="contact-line1" oninput="markDirty('contact-line1');update()" placeholder="hello@yourcompany.com">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-contact2">第二行</label>
-          <input type="text" id="contact-line2" oninput="markDirty('contact-line2');update()" value="+886 900-000-000">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-contact3">第三行</label>
-          <input type="text" id="contact-line3" oninput="markDirty('contact-line3');update()" placeholder="yourwebsite.com">
-        </div>
-      </div>
-    </div>
-
-    <!-- 法律聲明 -->
-    <div>
-      <div class="field-label-row" style="margin-bottom:6px;">
-        <div class="section-title" id="sec-legal" style="margin-bottom:0;">法律聲明（頁底）</div>
-        <div class="format-toolbar" aria-label="法律聲明文字格式">
-          <button type="button" class="format-btn format-bold" title="粗體" aria-label="粗體"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','bold')">B</button>
-          <button type="button" class="format-btn" title="項目符號" aria-label="項目符號"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','bullet')">•</button>
-          <button type="button" class="format-btn" title="編號清單" aria-label="編號清單"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','number')">1.</button>
-          <button type="button" class="format-btn" title="清除格式" aria-label="清除格式"
-            onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','clear')">Tx</button>
-        </div>
-      </div>
-      <textarea class="long-textarea" id="legal-text" data-autogrow oninput="autoGrowTextarea(this);markDirty('legal-text');update()" rows="3">本報價單於有效期限後自動失效。經雙方簽署後正式生效，並具法律約束力。</textarea>
-      <div class="format-hint">支援粗體與清單；未套用格式時維持原本外觀。</div>
-    </div>
-
-    <!-- 付款資訊 -->
-    <div>
-      <div class="section-title" id="sec-pay">付款資訊</div>
-      <div class="field-group">
-        <div>
-          <label class="field-label" id="lbl-bank-name">銀行</label>
-          <input type="text" id="bank-name" oninput="markDirty('bank-name');update()" placeholder="○○銀行（代碼）分行名稱">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-bank-acct">帳號</label>
-          <input type="text" id="bank-acct" oninput="markDirty('bank-acct');update()" placeholder="0000-000-000000">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-bank-holder">戶名</label>
-          <input type="text" id="bank-holder" oninput="markDirty('bank-holder');update()" placeholder="公司或個人戶名">
-        </div>
-        <div>
-          <label class="field-label" id="lbl-bank-swift">SWIFT Code</label>
-          <input type="text" id="bank-swift" oninput="markDirty('bank-swift');update()" placeholder="XXXXXXXX">
-        </div>
-      </div>
-    </div>
-
-        </div>
-      </div>
-    </div>
+        <div class="format-hint">選取文字後套用粗體；清單格式會保留在資料備份中。</div>
+      </section>
 
     </div><!-- end panel-edit -->
+
+    <!-- 範本設定：設定一次、之後很少改的內容 -->
+    <div id="panel-settings" class="panel-page">
+      <p class="panel-intro">這裡的設定會沿用到之後的每一張報價單。</p>
+
+      <div class="panel-group-label">文件內容</div>
+
+      <section class="panel-section" data-nav="報價方">
+        <div class="section-title" id="sec-from">報價方（我方）</div>
+        <div class="field-group">
+          <div>
+            <label class="field-label" id="lbl-from-name">公司名稱</label>
+            <input type="text" id="from-name" oninput="markDirty('from-name');update()" placeholder="公司名稱 / Company Name">
+          </div>
+          <div class="field-row">
+            <div>
+              <label class="field-label" id="lbl-from-email">電子信箱</label>
+              <input type="text" id="from-email" oninput="markDirty('from-email');update()" placeholder="hello@yourcompany.com">
+            </div>
+            <div>
+              <label class="field-label" id="lbl-from-phone">電話</label>
+              <input type="text" id="from-phone" oninput="markDirty('from-phone');update()" placeholder="+886 900-000-000">
+            </div>
+          </div>
+          <div>
+            <label class="field-label" id="lbl-from-addr">地址</label>
+            <textarea class="wrapped-single-line" id="from-addr" rows="2" data-autogrow
+              onkeydown="preventWrappedFieldNewline(event)"
+              oninput="normalizeWrappedField(this);markDirty('from-addr');update()"
+              placeholder="城市、區域、街道地址"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="文件與稅率">
+        <div class="section-title">文件與稅率</div>
+        <div class="field-group">
+          <div>
+            <label class="field-label" id="lbl-doctitle">文件標題</label>
+            <input type="text" id="qt-doctitle" oninput="markDirty('qt-doctitle');update()" value="報價單">
+          </div>
+          <div class="tax-row">
+            <label id="lbl-taxrate">營業稅率 (%)</label>
+            <input type="number" id="tax-rate" oninput="update()" value="5" min="0" max="100" step="0.1">
+          </div>
+          <div class="field-row" style="align-items:end;">
+            <div>
+              <label class="field-label" id="lbl-tax-decimals">稅金小數位數</label>
+              <input type="number" id="tax-decimals" value="0" min="0" max="6" step="1" oninput="update()">
+            </div>
+            <div>
+              <label class="field-label" id="lbl-tax-round">進位方式</label>
+              <select id="tax-round" oninput="update()">
+                <option value="round">四捨五入</option>
+                <option value="ceil">無條件進位</option>
+                <option value="floor">無條件捨去</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="付款條件">
+        <div class="section-title" id="sec-payterms">付款條件</div>
+        <div class="field-group">
+          <div>
+            <select id="pay-terms" oninput="update()" aria-labelledby="sec-payterms">
+              <option value="due_on_receipt">收到即付 / Due on Receipt</option>
+              <option value="net7">Net 7（7 天內付清）</option>
+              <option value="net14">Net 14（14 天內付清）</option>
+              <option value="net30">Net 30（30 天內付清）</option>
+              <option value="net60">Net 60（60 天內付清）</option>
+              <option value="50_50">50% 訂金 + 50% 交件後</option>
+              <option value="custom">自訂</option>
+            </select>
+          </div>
+          <div id="pay-terms-custom-wrap" style="display:none;">
+            <label class="field-label">自訂內容</label>
+            <textarea class="wrapped-single-line" id="pay-terms-custom" rows="2" data-autogrow
+              onkeydown="preventWrappedFieldNewline(event)"
+              oninput="normalizeWrappedField(this);markDirty('pay-terms-custom');update()"
+              placeholder="請輸入付款條件"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="付款資訊">
+        <div class="section-title" id="sec-pay">付款資訊</div>
+        <div class="field-group">
+          <div>
+            <label class="field-label" id="lbl-bank-name">銀行</label>
+            <input type="text" id="bank-name" oninput="markDirty('bank-name');update()" placeholder="○○銀行（代碼）分行名稱">
+          </div>
+          <div>
+            <label class="field-label" id="lbl-bank-acct">帳號</label>
+            <input type="text" id="bank-acct" oninput="markDirty('bank-acct');update()" placeholder="0000-000-000000">
+          </div>
+          <div class="field-row">
+            <div>
+              <label class="field-label" id="lbl-bank-holder">戶名</label>
+              <input type="text" id="bank-holder" oninput="markDirty('bank-holder');update()" placeholder="公司或個人戶名">
+            </div>
+            <div>
+              <label class="field-label" id="lbl-bank-swift">SWIFT Code</label>
+              <input type="text" id="bank-swift" oninput="markDirty('bank-swift');update()" placeholder="XXXXXXXX">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="頁底聯絡">
+        <div class="section-title" id="sec-contact">聯絡方式（頁底）</div>
+        <div class="field-group">
+          <div>
+            <label class="field-label" id="lbl-contact1">第一行</label>
+            <input type="text" id="contact-line1" oninput="markDirty('contact-line1');update()" placeholder="hello@yourcompany.com">
+          </div>
+          <div>
+            <label class="field-label" id="lbl-contact2">第二行</label>
+            <input type="text" id="contact-line2" oninput="markDirty('contact-line2');update()" value="+886 900-000-000">
+          </div>
+          <div>
+            <label class="field-label" id="lbl-contact3">第三行</label>
+            <input type="text" id="contact-line3" oninput="markDirty('contact-line3');update()" placeholder="yourwebsite.com">
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section has-format" data-nav="法律聲明">
+        <div class="field-label-row">
+          <div class="section-title" id="sec-legal">法律聲明（頁底）</div>
+          <div class="format-toolbar" aria-label="法律聲明文字格式">
+            <button type="button" class="format-btn format-bold" title="粗體" aria-label="粗體"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','bold')">B</button>
+            <button type="button" class="format-btn" title="項目符號" aria-label="項目符號"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','bullet')">•</button>
+            <button type="button" class="format-btn" title="編號清單" aria-label="編號清單"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','number')">1.</button>
+            <button type="button" class="format-btn" title="清除格式" aria-label="清除格式"
+              onmousedown="event.preventDefault()" onclick="applyTextFormat('legal-text','clear')">Tx</button>
+          </div>
+        </div>
+        <textarea class="long-textarea" id="legal-text" data-autogrow oninput="autoGrowTextarea(this);markDirty('legal-text');update()" rows="3">本報價單於有效期限後自動失效。經雙方簽署後正式生效，並具法律約束力。</textarea>
+        <div class="format-hint">支援粗體與清單；未套用格式時維持原本外觀。</div>
+      </section>
+
+      <section class="panel-section" data-nav="簽名">
+        <div class="section-title" id="sec-sig">簽名欄位</div>
+        <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
+          <button id="btn-sig-show" onclick="setSig(true)"
+            style="flex:1;padding:8px;background:#f0f0eb;color:#0e0e0e;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;">
+            顯示
+          </button>
+          <button id="btn-sig-hide" onclick="setSig(false)"
+            style="flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;">
+            隱藏
+          </button>
+        </div>
+      </section>
+
+      <div class="panel-group-label">外觀</div>
+
+      <section class="panel-section" data-nav="主題語言">
+        <div class="field-row">
+          <div>
+            <div class="section-title">主題</div>
+            <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
+              <button id="btn-dark" onclick="setTheme('dark')"
+                style="flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s;">
+                Dark
+              </button>
+              <button id="btn-light" onclick="setTheme('light')"
+                style="flex:1;padding:8px;background:#f0f0eb;color:#0e0e0e;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all 0.15s;">
+                Light
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="section-title">語言 / Language</div>
+            <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
+              <button id="btn-zh" onclick="setLang('zh')"
+                style="flex:1;padding:8px;background:#f0f0eb;color:#0e0e0e;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all 0.15s;">
+                中文
+              </button>
+              <button id="btn-en" onclick="setLang('en')"
+                style="flex:1;padding:8px;background:var(--input-bg);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s;">
+                English
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="Logo">
+        <div class="section-title" id="sec-logo">Logo 設定</div>
+        <div class="field-group">
+          <div>
+            <label class="field-label">Dark Mode Logo</label>
+            <div class="logo-upload-area" id="logo-dark-area">
+              <input type="file" accept="image/*" onchange="handleLogoUpload(event,'dark')" onclick="event.stopPropagation()">
+              <div id="logo-dark-thumb-wrap">
+                <div class="logo-upload-placeholder">☾</div>
+              </div>
+              <div class="logo-upload-info">
+                <strong id="logo-dark-filename">使用預設 Logo</strong>
+                <span>點擊上傳圖片</span>
+              </div>
+              <button class="logo-reset" id="logo-dark-reset" onclick="resetLogo('dark');event.stopPropagation();" style="display:none">✕ 重設</button>
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Light Mode Logo</label>
+            <div class="logo-upload-area" id="logo-light-area">
+              <input type="file" accept="image/*" onchange="handleLogoUpload(event,'light')" onclick="event.stopPropagation()">
+              <div id="logo-light-thumb-wrap">
+                <div class="logo-upload-placeholder">☀</div>
+              </div>
+              <div class="logo-upload-info">
+                <strong id="logo-light-filename">使用預設 Logo</strong>
+                <span>點擊上傳圖片</span>
+              </div>
+              <button class="logo-reset" id="logo-light-reset" onclick="resetLogo('light');event.stopPropagation();" style="display:none">✕ 重設</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section" data-nav="字體">
+        <div class="section-title">字體</div>
+        <div class="font-grid" id="font-grid"></div>
+      </section>
+
+      <section class="panel-section" data-nav="顏色">
+        <div class="section-title">顏色</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <label class="field-label" style="margin-bottom:6px;">背景色</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="color" id="color-bg" value="#0a0a0a" oninput="setDocColor('bg',this.value)"
+                style="width:32px;height:32px;padding:2px;border:0.5px solid var(--border-mid);border-radius:3px;background:var(--input-bg);cursor:pointer;flex-shrink:0;">
+              <div id="bg-swatches" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
+            </div>
+          </div>
+          <div>
+            <label class="field-label" style="margin-bottom:6px;">主色（文字）</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="color" id="color-text" value="#f5f5f0" oninput="setDocColor('text',this.value)"
+                style="width:32px;height:32px;padding:2px;border:0.5px solid var(--border-mid);border-radius:3px;background:var(--input-bg);cursor:pointer;flex-shrink:0;">
+              <div id="text-swatches" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
+            </div>
+          </div>
+          <div>
+            <label class="field-label" style="margin-bottom:6px;">快速配色</label>
+            <div id="combo-swatches" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;"></div>
+          </div>
+          <button onclick="resetDocColors()"
+            style="font-size:10px;color:var(--muted);background:none;border:0.5px solid var(--border-mid);
+                   padding:5px 0;border-radius:3px;cursor:pointer;font-family:inherit;width:100%;">重設預設值</button>
+        </div>
+      </section>
+
+    </div><!-- end panel-settings -->
   </div><!-- end panel -->
 
   <!-- RIGHT PREVIEW -->
@@ -2057,11 +2076,12 @@ let currentTheme = 'light';
 
 // ── PANEL TABS ──
 function switchTab(tab) {
-  document.getElementById('tab-edit').classList.toggle('active', tab === 'edit');
-  document.getElementById('tab-text').classList.toggle('active', tab === 'text');
-  document.getElementById('panel-edit').style.display = tab === 'edit' ? 'flex' : 'none';
-  document.getElementById('panel-text').style.display = tab === 'text' ? 'flex' : 'none';
+  for (const name of ['edit', 'settings', 'text']) {
+    document.getElementById('tab-' + name).classList.toggle('active', tab === name);
+    document.getElementById('panel-' + name).style.display = tab === name ? 'flex' : 'none';
+  }
   if (tab === 'text') generateMd();
+  renderSectionNav();
 }
 
 // ── MARKDOWN EXPORT ──
@@ -2303,9 +2323,9 @@ window.addEventListener('afterprint', () => { document.title = defaultTitle; });
 
 // 匯出前檢查：這些欄位空白時先提醒，避免把空白或「[客戶名稱]」寄給客戶
 const EXPORT_REQUIRED = [
-  { id: 'to-name',   group: 'group-to',       label: '客戶資訊 · 公司／姓名' },
-  { id: 'from-name', group: 'group-from',     label: '報價方 · 公司名稱' },
-  { id: 'qt-no',     group: 'group-doc-info', label: '報價資訊 · 文件編號' },
+  { id: 'to-name',   label: '報價內容 · 客戶公司／姓名' },
+  { id: 'from-name', label: '範本設定 · 報價方公司名稱' },
+  { id: 'qt-no',     label: '報價內容 · 文件編號' },
 ];
 let missingExportFields = [];
 
@@ -2323,26 +2343,258 @@ function forceExportPdf() {
   setTimeout(() => window.print(), 50); // 等對話框關閉後再開列印視窗
 }
 
-// 返回填寫：切到編輯頁、展開所在區塊，捲動並聚焦到第一個空白欄位
+// 返回填寫：跳到第一個空白欄位
 function goToMissingField() {
   document.getElementById('export-check').close();
   const field = missingExportFields[0];
-  if (!field) return;
-  switchTab('edit');
-  const body = document.getElementById('body-' + field.group);
-  const wasClosed = body && !body.classList.contains('open');
-  if (wasClosed) toggleGroup(field.group);
-  setTimeout(() => {
-    const input = document.getElementById(field.id);
-    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    input.focus({ preventScroll: true });
-    input.classList.remove('field-attention');
-    void input.offsetWidth; // 重新觸發動畫
-    input.classList.add('field-attention');
-  }, wasClosed ? 320 : 0); // 等區塊展開動畫結束
+  if (field) focusEditorField(field.id, 'field-attention');
 }
 
-// ⌘P / Ctrl+P 也走同一個檢查
+// 切到欄位所在的分頁，捲動、聚焦並短暫標示。
+// target 可以是欄位 id，或 "item-<index>" 代表第幾個服務項目。
+function focusEditorField(target, flashClass = 'field-locate') {
+  const itemMatch = /^item-(\d+)$/.exec(target);
+  const el = itemMatch
+    ? document.querySelector(`.item-row[data-item-index="${itemMatch[1]}"]`)
+    : document.getElementById('dp-wrap-' + target) || document.getElementById(target);
+  if (!el) return;
+  switchTab(el.closest('#panel-settings') ? 'settings' : 'edit');
+  lockSectionNav(el.closest('.panel-section'));
+
+  // 日期與下拉選單的原生欄位是隱藏的，改用看得到的外框來捲動與標示
+  const visible = el.querySelector('.datepicker-face') || el.closest('.eselect-wrap')?.querySelector('.eselect-face') || el;
+  visible.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const focusable = el.matches('input:not([type=hidden]), textarea, button')
+    ? el
+    : el.querySelector('input:not([type=hidden]):not([type=file]), textarea');
+  if (focusable) focusable.focus({ preventScroll: true });
+  else document.activeElement?.blur(); // 日期、下拉選單沒有可輸入的欄位，避免游標留在上一個欄位
+
+  visible.classList.remove(flashClass);
+  void visible.offsetWidth; // 重新觸發動畫
+  visible.classList.add(flashClass);
+}
+
+// 點預覽上的內容 → 跳到對應欄位（對應關係寫在預覽 HTML 的 data-edit）
+document.getElementById('preview').addEventListener('click', e => {
+  const hit = e.target.closest('[data-edit]');
+  if (hit) focusEditorField(hit.dataset.edit);
+});
+
+// ── 欄位搜尋 ──
+// keys 是除了欄位名稱以外，也能搜到它的常用說法
+const FIELD_INDEX = [
+  { id: 'qt-no',         label: '文件編號',         keys: '報價單號 單號 編號 number' },
+  { id: 'qt-currency',   label: '幣別',             keys: '貨幣 台幣 美元 currency' },
+  { id: 'qt-date',       label: '報價日期',         keys: '日期 date' },
+  { id: 'qt-valid',      label: '有效期限',         keys: '到期 期限 截止 valid' },
+  { id: 'to-name',       label: '客戶公司／姓名',   keys: '客戶 公司 名稱 client' },
+  { id: 'to-contact',    label: '客戶聯絡人',       keys: '聯絡人 窗口 contact' },
+  { id: 'to-email',      label: '客戶電子信箱',     keys: '信箱 email mail' },
+  { id: 'to-addr',       label: '客戶地址',         keys: '地址 address' },
+  { id: 'btn-add-item',  label: '新增服務項目',     keys: '服務項目 品項 項目 單價 數量 單位 item' },
+  { id: 'disc-type',     label: '折扣',             keys: '優惠 打折 discount' },
+  { id: 'notes',         label: '備註',             keys: '條款 說明 notes' },
+  { id: 'from-name',     label: '報價方公司名稱',   keys: '我方 公司 名稱' },
+  { id: 'from-email',    label: '報價方電子信箱',   keys: '我方 信箱 email mail' },
+  { id: 'from-phone',    label: '報價方電話',       keys: '我方 電話 手機 phone' },
+  { id: 'from-addr',     label: '報價方地址',       keys: '我方 地址 address' },
+  { id: 'qt-doctitle',   label: '文件標題',         keys: '標題 報價單 title' },
+  { id: 'tax-rate',      label: '營業稅率',         keys: '稅 稅率 營業稅 tax' },
+  { id: 'tax-decimals',  label: '稅金小數位數',     keys: '稅 小數 位數' },
+  { id: 'tax-round',     label: '稅金進位方式',     keys: '稅 進位 四捨五入 捨去' },
+  { id: 'pay-terms',     label: '付款條件',         keys: '付款 訂金 net' },
+  { id: 'bank-name',     label: '銀行',             keys: '匯款 付款資訊 bank' },
+  { id: 'bank-acct',     label: '銀行帳號',         keys: '帳號 匯款 account' },
+  { id: 'bank-holder',   label: '戶名',             keys: '匯款 帳戶名稱' },
+  { id: 'bank-swift',    label: 'SWIFT Code',       keys: '匯款 國際 swift' },
+  { id: 'contact-line1', label: '頁底聯絡方式',     keys: '頁底 聯絡 電話 信箱 email 網站 footer' },
+  { id: 'legal-text',    label: '法律聲明',         keys: '法律 聲明 條款 頁底 legal' },
+  { id: 'btn-sig-show',  label: '簽名欄位',         keys: '簽名 簽章 signature' },
+  { id: 'btn-dark',      label: '主題（深色／淺色）', keys: '主題 深色 淺色 外觀 dark light theme' },
+  { id: 'btn-zh',        label: '語言',             keys: '中文 英文 english language' },
+  { id: 'logo-dark-area',  label: 'Logo（深色主題）', keys: 'logo 標誌' },
+  { id: 'logo-light-area', label: 'Logo（淺色主題）', keys: 'logo 標誌' },
+  { id: 'font-grid',     label: '字體',             keys: '字型 font' },
+  { id: 'color-bg',      label: '顏色',             keys: '背景色 主色 配色 color' },
+];
+
+// 欄位所在的「分頁 · 區塊」，直接從面板結構讀出，不另外維護
+function fieldPath(target) {
+  const el = document.getElementById(target);
+  const section = el?.closest('.panel-section');
+  const tab = el?.closest('#panel-settings') ? '範本設定' : '報價內容';
+  return section ? `${tab} · ${section.dataset.nav}` : tab;
+}
+
+function searchFields(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  // 服務項目也能用名稱搜尋
+  const entries = FIELD_INDEX.concat(items.map((it, i) => ({
+    id: 'item-' + i, label: it.name || `項目 ${i + 1}`, keys: it.desc || '', path: '報價內容 · 服務項目',
+  })));
+  return entries
+    .map(e => {
+      const label = e.label.toLowerCase();
+      const score = label.startsWith(q) ? 3 : label.includes(q) ? 2 : e.keys.toLowerCase().includes(q) ? 1 : 0;
+      return { ...e, score };
+    })
+    .filter(e => e.score)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+}
+
+const fieldSearchInput = document.getElementById('field-search');
+const fieldSearchList = document.getElementById('field-search-results');
+let fieldSearchHits = [];
+let fieldSearchActive = 0;
+
+function renderFieldSearch() {
+  const q = fieldSearchInput.value.trim();
+  fieldSearchHits = searchFields(q);
+  fieldSearchActive = 0;
+  const open = q.length > 0;
+  fieldSearchList.classList.toggle('open', open);
+  fieldSearchInput.setAttribute('aria-expanded', open);
+  if (!open) return;
+  if (!fieldSearchHits.length) {
+    fieldSearchList.innerHTML = `<div class="field-search-empty">找不到「${esc(q)}」</div>`;
+    return;
+  }
+  const markHit = label => {
+    const at = label.toLowerCase().indexOf(q.toLowerCase());
+    return at < 0 ? esc(label)
+      : esc(label.slice(0, at)) + '<mark>' + esc(label.slice(at, at + q.length)) + '</mark>' + esc(label.slice(at + q.length));
+  };
+  fieldSearchList.innerHTML = fieldSearchHits.map((h, i) => `
+    <div class="field-search-result${i === 0 ? ' active' : ''}" role="option" data-index="${i}">
+      <span>${markHit(h.label)}</span><small>${esc(h.path || fieldPath(h.id))}</small>
+    </div>`).join('');
+}
+
+function setFieldSearchActive(i) {
+  const rows = fieldSearchList.querySelectorAll('.field-search-result');
+  if (!rows.length) return;
+  fieldSearchActive = (i + rows.length) % rows.length;
+  rows.forEach((r, j) => r.classList.toggle('active', j === fieldSearchActive));
+  rows[fieldSearchActive].scrollIntoView({ block: 'nearest' });
+}
+
+function closeFieldSearch() {
+  fieldSearchInput.value = '';
+  renderFieldSearch();
+}
+
+function chooseFieldSearchHit(i) {
+  const hit = fieldSearchHits[i];
+  if (!hit) return;
+  closeFieldSearch();
+  focusEditorField(hit.id);
+}
+
+fieldSearchInput.addEventListener('input', renderFieldSearch);
+fieldSearchInput.addEventListener('keydown', e => {
+  if (e.isComposing) return; // 中文輸入法選字中，不攔截方向鍵與 Enter
+  if (e.key === 'ArrowDown') { e.preventDefault(); setFieldSearchActive(fieldSearchActive + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setFieldSearchActive(fieldSearchActive - 1); }
+  else if (e.key === 'Enter') { e.preventDefault(); chooseFieldSearchHit(fieldSearchActive); }
+  else if (e.key === 'Escape') { closeFieldSearch(); fieldSearchInput.blur(); }
+});
+// mousedown 而非 click：避免輸入框先失焦把清單關掉
+fieldSearchList.addEventListener('mousedown', e => {
+  const row = e.target.closest('.field-search-result');
+  if (!row) return;
+  e.preventDefault();
+  chooseFieldSearchHit(+row.dataset.index);
+});
+fieldSearchInput.addEventListener('blur', () => setTimeout(() => {
+  if (document.activeElement !== fieldSearchInput) fieldSearchList.classList.remove('open');
+}, 0));
+fieldSearchInput.addEventListener('focus', () => { if (fieldSearchInput.value) renderFieldSearch(); });
+
+// ⌘K / Ctrl+K 聚焦搜尋框
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    fieldSearchInput.focus();
+    fieldSearchInput.select();
+  }
+});
+
+// ── 區塊導覽 ──
+const panelEl = document.querySelector('.panel');
+const panelHead = document.getElementById('panel-head');
+const sectionNav = document.getElementById('section-nav');
+
+function activePanelPage() {
+  return ['panel-edit', 'panel-settings'].map(id => document.getElementById(id))
+    .find(el => el.style.display !== 'none' && getComputedStyle(el).display !== 'none');
+}
+
+function renderSectionNav() {
+  const page = activePanelPage();
+  const sections = page ? [...page.querySelectorAll('.panel-section[data-nav]')] : [];
+  sectionNav.innerHTML = sections.map((sec, i) =>
+    `<button type="button" data-section="${i}">${esc(sec.dataset.nav)}</button>`).join('');
+  sectionNav.querySelectorAll('button').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      lockSectionNav(sections[i]);
+      sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  updateSectionNav();
+}
+
+// 剛跳轉（點導覽、搜尋、點預覽）時固定標示目標區塊，直到使用者自己捲動
+let sectionNavLock = null;
+function lockSectionNav(section) {
+  sectionNavLock = section;
+  updateSectionNav();
+}
+['wheel', 'touchstart'].forEach(type =>
+  panelEl.addEventListener(type, () => { sectionNavLock = null; }, { passive: true }));
+
+// 標示目前所在的區塊：以標頭下方可視範圍的中線落在哪一區為準
+function updateSectionNav() {
+  const page = activePanelPage();
+  const buttons = [...sectionNav.querySelectorAll('button')];
+  if (!page || !buttons.length) return;
+  const sections = [...page.querySelectorAll('.panel-section[data-nav]')];
+  let current = sections.indexOf(sectionNavLock);
+  if (current < 0) {
+    const headH = panelHead.offsetHeight;
+    const line = panelEl.getBoundingClientRect().top + headH + (panelEl.clientHeight - headH) / 2;
+    current = 0;
+    sections.forEach((sec, i) => { if (sec.getBoundingClientRect().top <= line) current = i; });
+  }
+  buttons.forEach((b, i) => b.classList.toggle('active', i === current));
+  // 讓目前的標籤保持在導覽列可見範圍內（只捲導覽列本身）
+  const btn = buttons[current];
+  if (btn.offsetLeft < sectionNav.scrollLeft) sectionNav.scrollLeft = btn.offsetLeft - 8;
+  else if (btn.offsetLeft + btn.offsetWidth > sectionNav.scrollLeft + sectionNav.clientWidth)
+    sectionNav.scrollLeft = btn.offsetLeft + btn.offsetWidth - sectionNav.clientWidth + 8;
+}
+
+let sectionNavFrame = 0;
+panelEl.addEventListener('scroll', () => {
+  cancelAnimationFrame(sectionNavFrame);
+  sectionNavFrame = requestAnimationFrame(updateSectionNav);
+}, { passive: true });
+
+// 固定標頭的高度給 scroll-padding 用，跳到欄位時不會被標頭蓋住
+new ResizeObserver(() => {
+  panelEl.style.setProperty('--panel-head-h', panelHead.offsetHeight + 8 + 'px');
+}).observe(panelHead);
+
+renderSectionNav();
+
+// ⌘P / Ctrl+P 也走同一個檢查；按鈕上的提示依平台顯示
+if (!/Mac|iPhone|iPad/.test(navigator.platform)) {
+  document.getElementById('print-shortcut').textContent = 'Ctrl P';
+  document.getElementById('field-search-shortcut').textContent = 'Ctrl K';
+}
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'p') {
     e.preventDefault();
@@ -2839,28 +3091,6 @@ document.addEventListener('click', function() {
 });
 
 
-// ── DROPDOWN OVERFLOW FIX ──
-function fixCollapsibleOverflow(el) {
-  let node = el.parentElement;
-  while (node) {
-    if (node.classList && node.classList.contains('collapsible-body')) {
-      node.style.overflow = 'visible';
-    }
-    node = node.parentElement;
-  }
-}
-function restoreCollapsibleOverflow() {
-  document.querySelectorAll('.collapsible-body.open').forEach(el => {
-    el.style.overflow = '';
-  });
-}
-// Close dropdowns + restore on outside click
-const _origOutsideClick = document.onclick;
-document.addEventListener('click', function() {
-  restoreCollapsibleOverflow();
-});
-
-
 // ── CUSTOM DATEPICKER ──
 const DP_STATE = {}; // { fieldId: { year, month } }
 const DP_WEEKDAYS_ZH = ['日','一','二','三','四','五','六'];
@@ -2876,7 +3106,6 @@ function toggleDatepicker(fieldId) {
   const isOpen = wrap.classList.contains('open');
   // close all
   document.querySelectorAll('.datepicker-wrap.open').forEach(w => w.classList.remove('open'));
-  restoreCollapsibleOverflow();
   if (!isOpen) {
     const today = new Date();
     const cur   = document.getElementById(fieldId).value;
@@ -2884,7 +3113,6 @@ function toggleDatepicker(fieldId) {
     DP_STATE[fieldId] = { year: d.getFullYear(), month: d.getMonth() };
     renderDatepicker(fieldId);
     wrap.classList.add('open');
-    fixCollapsibleOverflow(wrap);
   }
 }
 
@@ -2943,7 +3171,6 @@ function selectDate(fieldId, year, month, day) {
   // close popup
   const wrap = document.getElementById('dp-wrap-' + fieldId);
   if (wrap) wrap.classList.remove('open');
-  restoreCollapsibleOverflow();
   el.dispatchEvent(new Event('input'));
 }
 
@@ -2967,10 +3194,8 @@ function toggleUnitDropdown(idx) {
   const dd = wrap.querySelector('.unit-dropdown');
   const isOpen = dd.classList.contains('open');
   document.querySelectorAll('.unit-dropdown.open').forEach(d => d.classList.remove('open'));
-  restoreCollapsibleOverflow();
   if (!isOpen) {
     dd.classList.add('open');
-    fixCollapsibleOverflow(wrap);
   }
 }
 
@@ -3166,15 +3391,6 @@ function renderColorPicker() {
 }
 
 
-// ── COLLAPSIBLE GROUPS ──
-function toggleGroup(id) {
-  const body  = document.getElementById('body-' + id);
-  const arrow = document.getElementById('arrow-' + id);
-  if (!body) return;
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  if (arrow) arrow.classList.toggle('open', !isOpen);
-}
 
 
 // ── LOCALSTORAGE AUTOSAVE ──
@@ -3320,7 +3536,7 @@ function restoreState() {
 }
 
 function clearSavedState() {
-  const msg = '⚠️ 清除後無法復原\n\n這將刪除所有填寫內容與外觀設定（主題、字體、顏色等）。\n\n建議先在「資料 / 備份」匯出 .md 檔備份後再繼續。\n\n確定要清除嗎？';
+  const msg = '⚠️ 清除後無法復原\n\n這將刪除所有填寫內容與外觀設定（主題、字體、顏色等）。\n\n建議先在「備份」分頁匯出 .md 檔後再繼續。\n\n確定要清除嗎？';
   if (!confirm(msg)) return;
   localStorage.removeItem(LS_KEY);
   location.reload();
@@ -3433,11 +3649,6 @@ function moveItem(i, delta) {
   [items[i], items[target]] = [items[target], items[i]];
   renderPanel();
   update();
-}
-
-function updateItemCardTitle(i, value) {
-  const title = document.getElementById(`item-card-title-${i}`);
-  if (title) title.textContent = value.trim() || (currentLang === 'zh' ? '未命名項目' : 'Untitled item');
 }
 
 function preventWrappedFieldNewline(event) {
@@ -3593,7 +3804,6 @@ function renderPanel() {
       <div class="item-card-head">
         <div class="item-card-heading">
           <span class="item-card-index">${currentLang === 'zh' ? '項目' : 'Item'} ${String(i + 1).padStart(2, '0')}</span>
-          <span class="item-card-title" id="item-card-title-${i}">${esc(it.name || (currentLang === 'zh' ? '未命名項目' : 'Untitled item'))}</span>
         </div>
         <div class="item-card-actions">
           <button type="button" class="item-action" onclick="moveItem(${i},-1)" ${i === 0 ? 'disabled' : ''}
@@ -3608,9 +3818,9 @@ function renderPanel() {
       </div>
       <div class="item-grid">
         <div class="item-name-field">
-          <label class="field-label">${T[currentLang].itemNameLbl}</label>
           <input type="text" value="${esc(it.name)}" placeholder="${T[currentLang].itemNameLbl}"
-            oninput="items[${i}].name=this.value;updateItemCardTitle(${i},this.value);update()">
+            aria-label="${T[currentLang].itemNameLbl}"
+            oninput="items[${i}].name=this.value;update()">
         </div>
         <div class="item-meta-grid">
           <div>
@@ -3909,8 +4119,8 @@ function update() {
   const legalText = g('legal-text').value || '';
   const legalHtml = renderFormattedText(legalText, true);
 
-  const tableRows = items.map(it => `
-    <tr>
+  const tableRows = items.map((it, i) => `
+    <tr data-edit="item-${i}">
       <td>
         <div class="td-name">${esc(it.name || '（未命名）')}</div>
         ${it.desc ? '<div class="td-desc">' + renderFormattedText(it.desc, true) + '</div>' : ''}
@@ -3934,33 +4144,33 @@ function update() {
 
   sourceEl.innerHTML = `
     <div class="qt-header">
-      <div id="qt-logo-wrap" style="line-height:0">${getLogoHTML(currentTheme)}</div>
+      <div id="qt-logo-wrap" style="line-height:0" data-edit="logo-${currentTheme}-area">${getLogoHTML(currentTheme)}</div>
       <div class="qt-title-block">
-        <div class="qt-title" style="font-family:${currentFont.titleFamily};font-weight:${currentFont.titleWeight};">${qtDocTitle}</div>
-        <div class="qt-no">${qtNo}</div>
+        <div class="qt-title" data-edit="qt-doctitle" style="font-family:${currentFont.titleFamily};font-weight:${currentFont.titleWeight};">${qtDocTitle}</div>
+        <div class="qt-no" data-edit="qt-no">${qtNo}</div>
       </div>
     </div>
 
     <div class="qt-meta">
-      <div class="qt-meta-item"><span>${T[currentLang].pvDate}</span><p>${qtDate}</p></div>
-      <div class="qt-meta-item"><span>${T[currentLang].pvValid}</span><p>${qtValid}</p></div>
-      <div class="qt-meta-item"><span>${T[currentLang].pvCurrency}</span><p>${currencyLabel}</p></div>
+      <div class="qt-meta-item" data-edit="qt-date"><span>${T[currentLang].pvDate}</span><p>${qtDate}</p></div>
+      <div class="qt-meta-item" data-edit="qt-valid"><span>${T[currentLang].pvValid}</span><p>${qtValid}</p></div>
+      <div class="qt-meta-item" data-edit="qt-currency"><span>${T[currentLang].pvCurrency}</span><p>${currencyLabel}</p></div>
     </div>
 
     <div class="qt-parties">
-      <div class="qt-party">
+      <div class="qt-party" data-edit="from-name">
         <span>${T[currentLang].pvFrom}</span>
         <div class="qt-party-name">${fromName}</div>
         <p>${fromEmail}<br>${fromPhone}<br>${fromAddr}</p>
       </div>
-      <div class="qt-party">
+      <div class="qt-party" data-edit="to-name">
         <span>${T[currentLang].pvTo}</span>
         <div class="qt-party-name">${toName}</div>
         <p>${toLines || '—'}</p>
       </div>
     </div>
 
-    <div class="qt-validity">${T[currentLang].pvValidity(qtValid)}</div>
+    <div class="qt-validity" data-edit="qt-valid">${T[currentLang].pvValidity(qtValid)}</div>
 
     <table class="qt-table">
       <thead>
@@ -3978,16 +4188,16 @@ function update() {
     <div class="qt-totals">
       <div class="qt-totals-inner">
         <div class="qt-trow"><span>${T[currentLang].pvSubtotal}</span><span>${currency} ${fmt(subtotal)}</span></div>
-        ${discount > 0 ? `<div class="qt-trow"><span>${T[currentLang].pvDiscount}${discType==='pct'?' ('+discVal+'%)':''}</span><span>− ${currency} ${fmt(discount)}</span></div>` : ''}
-        <div class="qt-trow"><span>${T[currentLang].pvTax(taxRate)}</span><span>${currency} ${fmtDec(tax, taxDecimals, taxDecimals)}</span></div>
+        ${discount > 0 ? `<div class="qt-trow" data-edit="disc-type"><span>${T[currentLang].pvDiscount}${discType==='pct'?' ('+discVal+'%)':''}</span><span>− ${currency} ${fmt(discount)}</span></div>` : ''}
+        <div class="qt-trow" data-edit="tax-rate"><span>${T[currentLang].pvTax(taxRate)}</span><span>${currency} ${fmtDec(tax, taxDecimals, taxDecimals)}</span></div>
         <div class="qt-trow grand"><span>${T[currentLang].pvTotal}</span><span>${currency} ${fmtDec(total, taxDecimals, Math.max(taxDecimals, 3))}</span></div>
       </div>
     </div>
 
-    ${notes ? `<div class="qt-notes"><span>${T[currentLang].pvNotes}</span><div class="qt-rich-text">${notesHtml}</div></div>` : ''}
+    ${notes ? `<div class="qt-notes" data-edit="notes"><span>${T[currentLang].pvNotes}</span><div class="qt-rich-text">${notesHtml}</div></div>` : ''}
 
     ${showSignature ? `
-    <div class="qt-signature-section">
+    <div class="qt-signature-section" data-edit="btn-sig-show">
       <div class="qt-sig-block">
         <span>${T[currentLang].pvSigClient}</span>
         <div class="qt-sig-line"></div>
@@ -3999,11 +4209,11 @@ function update() {
     </div>` : ''}
 
     <footer class="qt-footer">
-      <div>
+      <div data-edit="contact-line1">
         <span>${T[currentLang].pvContact}</span>
         <p>${[contactLine1,contactLine2,contactLine3].filter(Boolean).join('<br>')}</p>
       </div>
-      <div>
+      <div data-edit="bank-name">
         <span>${T[currentLang].pvPayment}</span>
         <p><b style="color:rgba(245,245,240,0.7);font-weight:500">${T[currentLang].pvPayTerms}</b> ${getPayTermsLabel(currentLang)}<br>
         <b style="color:rgba(245,245,240,0.7);font-weight:500">${T[currentLang].pvBank}</b> ${bankName}<br>
@@ -4011,7 +4221,7 @@ function update() {
         <b style="color:rgba(245,245,240,0.7);font-weight:500">${T[currentLang].pvHolder}</b> ${bankHolder}<br>
         ${bankSwift ? `<b style="color:rgba(245,245,240,0.7);font-weight:500">${T[currentLang].pvSwift}</b> ${bankSwift}` : ''}</p>
       </div>
-      <div>
+      <div data-edit="legal-text">
         <span>${T[currentLang].pvLegal}</span>
         <div class="qt-rich-text">${legalHtml}</div>
       </div>
