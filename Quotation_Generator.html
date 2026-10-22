@@ -935,10 +935,8 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
 
 /* ── PANEL TABS ── */
-.panel-tabs {
-  display: flex;
-  border-bottom: 0.5px solid var(--border-mid);
-  margin: -20px 0 4px;   /* 往上蓋住面板的 20px padding，捲動時上方不會露出內容 */
+.panel-head {
+  margin: -20px 0 -6px;   /* 往上蓋住面板的 20px padding，捲動時上方不會露出內容 */
   padding-top: 20px;
   flex-shrink: 0;
   background: var(--bg);
@@ -946,6 +944,91 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   top: -20px;
   z-index: 10;
 }
+.panel-tabs {
+  display: flex;
+  border-bottom: 0.5px solid var(--border-mid);
+}
+
+/* 欄位搜尋 */
+.field-search { position: relative; margin-top: 12px; }
+.field-search input {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 44px 0 30px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.field-search-icon {
+  position: absolute; left: 10px; top: 9px;
+  width: 14px; height: 14px;
+  fill: none; stroke: rgba(240,240,235,0.4); stroke-width: 1.5; stroke-linecap: round;
+  pointer-events: none;
+}
+.field-search kbd {
+  position: absolute; right: 8px; top: 8px;
+  padding: 0 5px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 10px;
+  line-height: 15px;
+  color: rgba(240,240,235,0.4);
+  pointer-events: none;
+}
+.field-search input:focus ~ kbd { visibility: hidden; }
+.field-search-results {
+  display: none;
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 0.5px solid var(--border-mid);
+  border-radius: 6px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  padding: 4px;
+}
+.field-search-results.open { display: block; }
+.field-search-result {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+.field-search-result small { font-size: 10.5px; color: rgba(240,240,235,0.4); white-space: nowrap; }
+.field-search-result.active { background: rgba(240,240,235,0.08); }
+.field-search-result mark { background: none; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.field-search-empty { padding: 10px; font-size: 11px; color: var(--muted); }
+
+/* 區塊導覽：單行可橫向捲動，標示目前所在區塊 */
+.section-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 10px 0 10px;
+  border-bottom: 0.5px solid var(--border);
+}
+.section-nav::-webkit-scrollbar { display: none; }
+.section-nav:empty { display: none; }
+.section-nav button {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: 999px;
+  background: none;
+  color: rgba(240,240,235,0.5);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.section-nav button:hover { color: var(--text); border-color: rgba(240,240,235,0.3); }
+.section-nav button.active { background: var(--text); border-color: transparent; color: #0e0e0e; }
+
+/* 捲動、聚焦欄位時避開固定標頭（高度由 JS 量測） */
+.panel { scroll-padding-top: var(--panel-head-h, 0px); }
 .panel-tab {
   flex: 1;
   padding: 10px 0;
@@ -1529,11 +1612,21 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   <!-- LEFT PANEL -->
   <div class="panel">
 
-    <!-- TABS -->
-    <div class="panel-tabs">
-      <button class="panel-tab active" id="tab-edit" onclick="switchTab('edit')">報價內容</button>
-      <button class="panel-tab" id="tab-settings" onclick="switchTab('settings')">範本設定</button>
-      <button class="panel-tab" id="tab-text" onclick="switchTab('text')">備份</button>
+    <!-- 固定標頭：分頁、欄位搜尋、區塊導覽 -->
+    <div class="panel-head" id="panel-head">
+      <div class="panel-tabs">
+        <button class="panel-tab active" id="tab-edit" onclick="switchTab('edit')">報價內容</button>
+        <button class="panel-tab" id="tab-settings" onclick="switchTab('settings')">範本設定</button>
+        <button class="panel-tab" id="tab-text" onclick="switchTab('text')">備份</button>
+      </div>
+      <div class="field-search">
+        <svg class="field-search-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+        <input type="text" id="field-search" placeholder="搜尋欄位" autocomplete="off" spellcheck="false"
+          role="combobox" aria-expanded="false" aria-controls="field-search-results" aria-label="搜尋欄位">
+        <kbd id="field-search-shortcut">⌘K</kbd>
+        <div class="field-search-results" id="field-search-results" role="listbox"></div>
+      </div>
+      <nav class="section-nav" id="section-nav" aria-label="區塊導覽"></nav>
     </div>
 
     <!-- TEXT TAB -->
@@ -1561,7 +1654,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <div id="panel-edit" class="panel-page">
       <p class="panel-intro">點右側報價單上的內容，可直接跳到對應欄位。</p>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="報價資訊">
         <div class="section-title" id="sec-doc">報價資訊</div>
         <div class="field-group">
           <div class="field-row">
@@ -1612,7 +1705,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="客戶">
         <div class="section-title" id="sec-to">客戶資訊</div>
         <div class="field-group">
           <div>
@@ -1639,7 +1732,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="服務項目">
         <div class="section-title" id="sec-items">服務項目</div>
         <div id="items-list" class="field-group"></div>
         <button class="btn-add" id="btn-add-item" onclick="addItem()">＋ 新增項目</button>
@@ -1649,7 +1742,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="折扣">
         <div class="section-title" id="sec-discount">折扣</div>
         <div style="display:grid;grid-template-columns:1fr 100px;gap:8px;align-items:center;">
           <div>
@@ -1667,7 +1760,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section has-format">
+      <section class="panel-section has-format" data-nav="備註">
         <div class="field-label-row">
           <div class="section-title" id="sec-notes">備註</div>
           <div class="format-toolbar" aria-label="備註文字格式">
@@ -1694,7 +1787,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
       <div class="panel-group-label">文件內容</div>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="報價方">
         <div class="section-title" id="sec-from">報價方（我方）</div>
         <div class="field-group">
           <div>
@@ -1721,7 +1814,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="文件與稅率">
         <div class="section-title">文件與稅率</div>
         <div class="field-group">
           <div>
@@ -1749,7 +1842,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="付款條件">
         <div class="section-title" id="sec-payterms">付款條件</div>
         <div class="field-group">
           <div>
@@ -1773,7 +1866,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="付款資訊">
         <div class="section-title" id="sec-pay">付款資訊</div>
         <div class="field-group">
           <div>
@@ -1797,7 +1890,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="頁底聯絡">
         <div class="section-title" id="sec-contact">聯絡方式（頁底）</div>
         <div class="field-group">
           <div>
@@ -1815,7 +1908,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section has-format">
+      <section class="panel-section has-format" data-nav="法律聲明">
         <div class="field-label-row">
           <div class="section-title" id="sec-legal">法律聲明（頁底）</div>
           <div class="format-toolbar" aria-label="法律聲明文字格式">
@@ -1833,7 +1926,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         <div class="format-hint">支援粗體與清單；未套用格式時維持原本外觀。</div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="簽名">
         <div class="section-title" id="sec-sig">簽名欄位</div>
         <div style="display:flex;gap:0;border:0.5px solid var(--border-mid);border-radius:3px;overflow:hidden;">
           <button id="btn-sig-show" onclick="setSig(true)"
@@ -1849,7 +1942,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
       <div class="panel-group-label">外觀</div>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="主題語言">
         <div class="field-row">
           <div>
             <div class="section-title">主題</div>
@@ -1880,7 +1973,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="Logo">
         <div class="section-title" id="sec-logo">Logo 設定</div>
         <div class="field-group">
           <div>
@@ -1914,12 +2007,12 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="字體">
         <div class="section-title">字體</div>
         <div class="font-grid" id="font-grid"></div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-nav="顏色">
         <div class="section-title">顏色</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <div>
@@ -1988,6 +2081,7 @@ function switchTab(tab) {
     document.getElementById('panel-' + name).style.display = tab === name ? 'flex' : 'none';
   }
   if (tab === 'text') generateMd();
+  renderSectionNav();
 }
 
 // ── MARKDOWN EXPORT ──
@@ -2265,6 +2359,7 @@ function focusEditorField(target, flashClass = 'field-locate') {
     : document.getElementById('dp-wrap-' + target) || document.getElementById(target);
   if (!el) return;
   switchTab(el.closest('#panel-settings') ? 'settings' : 'edit');
+  lockSectionNav(el.closest('.panel-section'));
 
   // 日期與下拉選單的原生欄位是隱藏的，改用看得到的外框來捲動與標示
   const visible = el.querySelector('.datepicker-face') || el.closest('.eselect-wrap')?.querySelector('.eselect-face') || el;
@@ -2287,8 +2382,219 @@ document.getElementById('preview').addEventListener('click', e => {
   if (hit) focusEditorField(hit.dataset.edit);
 });
 
+// ── 欄位搜尋 ──
+// keys 是除了欄位名稱以外，也能搜到它的常用說法
+const FIELD_INDEX = [
+  { id: 'qt-no',         label: '文件編號',         keys: '報價單號 單號 編號 number' },
+  { id: 'qt-currency',   label: '幣別',             keys: '貨幣 台幣 美元 currency' },
+  { id: 'qt-date',       label: '報價日期',         keys: '日期 date' },
+  { id: 'qt-valid',      label: '有效期限',         keys: '到期 期限 截止 valid' },
+  { id: 'to-name',       label: '客戶公司／姓名',   keys: '客戶 公司 名稱 client' },
+  { id: 'to-contact',    label: '客戶聯絡人',       keys: '聯絡人 窗口 contact' },
+  { id: 'to-email',      label: '客戶電子信箱',     keys: '信箱 email mail' },
+  { id: 'to-addr',       label: '客戶地址',         keys: '地址 address' },
+  { id: 'btn-add-item',  label: '新增服務項目',     keys: '服務項目 品項 項目 單價 數量 單位 item' },
+  { id: 'disc-type',     label: '折扣',             keys: '優惠 打折 discount' },
+  { id: 'notes',         label: '備註',             keys: '條款 說明 notes' },
+  { id: 'from-name',     label: '報價方公司名稱',   keys: '我方 公司 名稱' },
+  { id: 'from-email',    label: '報價方電子信箱',   keys: '我方 信箱 email mail' },
+  { id: 'from-phone',    label: '報價方電話',       keys: '我方 電話 手機 phone' },
+  { id: 'from-addr',     label: '報價方地址',       keys: '我方 地址 address' },
+  { id: 'qt-doctitle',   label: '文件標題',         keys: '標題 報價單 title' },
+  { id: 'tax-rate',      label: '營業稅率',         keys: '稅 稅率 營業稅 tax' },
+  { id: 'tax-decimals',  label: '稅金小數位數',     keys: '稅 小數 位數' },
+  { id: 'tax-round',     label: '稅金進位方式',     keys: '稅 進位 四捨五入 捨去' },
+  { id: 'pay-terms',     label: '付款條件',         keys: '付款 訂金 net' },
+  { id: 'bank-name',     label: '銀行',             keys: '匯款 付款資訊 bank' },
+  { id: 'bank-acct',     label: '銀行帳號',         keys: '帳號 匯款 account' },
+  { id: 'bank-holder',   label: '戶名',             keys: '匯款 帳戶名稱' },
+  { id: 'bank-swift',    label: 'SWIFT Code',       keys: '匯款 國際 swift' },
+  { id: 'contact-line1', label: '頁底聯絡方式',     keys: '頁底 聯絡 電話 信箱 email 網站 footer' },
+  { id: 'legal-text',    label: '法律聲明',         keys: '法律 聲明 條款 頁底 legal' },
+  { id: 'btn-sig-show',  label: '簽名欄位',         keys: '簽名 簽章 signature' },
+  { id: 'btn-dark',      label: '主題（深色／淺色）', keys: '主題 深色 淺色 外觀 dark light theme' },
+  { id: 'btn-zh',        label: '語言',             keys: '中文 英文 english language' },
+  { id: 'logo-dark-area',  label: 'Logo（深色主題）', keys: 'logo 標誌' },
+  { id: 'logo-light-area', label: 'Logo（淺色主題）', keys: 'logo 標誌' },
+  { id: 'font-grid',     label: '字體',             keys: '字型 font' },
+  { id: 'color-bg',      label: '顏色',             keys: '背景色 主色 配色 color' },
+];
+
+// 欄位所在的「分頁 · 區塊」，直接從面板結構讀出，不另外維護
+function fieldPath(target) {
+  const el = document.getElementById(target);
+  const section = el?.closest('.panel-section');
+  const tab = el?.closest('#panel-settings') ? '範本設定' : '報價內容';
+  return section ? `${tab} · ${section.dataset.nav}` : tab;
+}
+
+function searchFields(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  // 服務項目也能用名稱搜尋
+  const entries = FIELD_INDEX.concat(items.map((it, i) => ({
+    id: 'item-' + i, label: it.name || `項目 ${i + 1}`, keys: it.desc || '', path: '報價內容 · 服務項目',
+  })));
+  return entries
+    .map(e => {
+      const label = e.label.toLowerCase();
+      const score = label.startsWith(q) ? 3 : label.includes(q) ? 2 : e.keys.toLowerCase().includes(q) ? 1 : 0;
+      return { ...e, score };
+    })
+    .filter(e => e.score)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+}
+
+const fieldSearchInput = document.getElementById('field-search');
+const fieldSearchList = document.getElementById('field-search-results');
+let fieldSearchHits = [];
+let fieldSearchActive = 0;
+
+function renderFieldSearch() {
+  const q = fieldSearchInput.value.trim();
+  fieldSearchHits = searchFields(q);
+  fieldSearchActive = 0;
+  const open = q.length > 0;
+  fieldSearchList.classList.toggle('open', open);
+  fieldSearchInput.setAttribute('aria-expanded', open);
+  if (!open) return;
+  if (!fieldSearchHits.length) {
+    fieldSearchList.innerHTML = `<div class="field-search-empty">找不到「${esc(q)}」</div>`;
+    return;
+  }
+  const markHit = label => {
+    const at = label.toLowerCase().indexOf(q.toLowerCase());
+    return at < 0 ? esc(label)
+      : esc(label.slice(0, at)) + '<mark>' + esc(label.slice(at, at + q.length)) + '</mark>' + esc(label.slice(at + q.length));
+  };
+  fieldSearchList.innerHTML = fieldSearchHits.map((h, i) => `
+    <div class="field-search-result${i === 0 ? ' active' : ''}" role="option" data-index="${i}">
+      <span>${markHit(h.label)}</span><small>${esc(h.path || fieldPath(h.id))}</small>
+    </div>`).join('');
+}
+
+function setFieldSearchActive(i) {
+  const rows = fieldSearchList.querySelectorAll('.field-search-result');
+  if (!rows.length) return;
+  fieldSearchActive = (i + rows.length) % rows.length;
+  rows.forEach((r, j) => r.classList.toggle('active', j === fieldSearchActive));
+  rows[fieldSearchActive].scrollIntoView({ block: 'nearest' });
+}
+
+function closeFieldSearch() {
+  fieldSearchInput.value = '';
+  renderFieldSearch();
+}
+
+function chooseFieldSearchHit(i) {
+  const hit = fieldSearchHits[i];
+  if (!hit) return;
+  closeFieldSearch();
+  focusEditorField(hit.id);
+}
+
+fieldSearchInput.addEventListener('input', renderFieldSearch);
+fieldSearchInput.addEventListener('keydown', e => {
+  if (e.isComposing) return; // 中文輸入法選字中，不攔截方向鍵與 Enter
+  if (e.key === 'ArrowDown') { e.preventDefault(); setFieldSearchActive(fieldSearchActive + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setFieldSearchActive(fieldSearchActive - 1); }
+  else if (e.key === 'Enter') { e.preventDefault(); chooseFieldSearchHit(fieldSearchActive); }
+  else if (e.key === 'Escape') { closeFieldSearch(); fieldSearchInput.blur(); }
+});
+// mousedown 而非 click：避免輸入框先失焦把清單關掉
+fieldSearchList.addEventListener('mousedown', e => {
+  const row = e.target.closest('.field-search-result');
+  if (!row) return;
+  e.preventDefault();
+  chooseFieldSearchHit(+row.dataset.index);
+});
+fieldSearchInput.addEventListener('blur', () => setTimeout(() => {
+  if (document.activeElement !== fieldSearchInput) fieldSearchList.classList.remove('open');
+}, 0));
+fieldSearchInput.addEventListener('focus', () => { if (fieldSearchInput.value) renderFieldSearch(); });
+
+// ⌘K / Ctrl+K 聚焦搜尋框
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    fieldSearchInput.focus();
+    fieldSearchInput.select();
+  }
+});
+
+// ── 區塊導覽 ──
+const panelEl = document.querySelector('.panel');
+const panelHead = document.getElementById('panel-head');
+const sectionNav = document.getElementById('section-nav');
+
+function activePanelPage() {
+  return ['panel-edit', 'panel-settings'].map(id => document.getElementById(id))
+    .find(el => el.style.display !== 'none' && getComputedStyle(el).display !== 'none');
+}
+
+function renderSectionNav() {
+  const page = activePanelPage();
+  const sections = page ? [...page.querySelectorAll('.panel-section[data-nav]')] : [];
+  sectionNav.innerHTML = sections.map((sec, i) =>
+    `<button type="button" data-section="${i}">${esc(sec.dataset.nav)}</button>`).join('');
+  sectionNav.querySelectorAll('button').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      lockSectionNav(sections[i]);
+      sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  updateSectionNav();
+}
+
+// 剛跳轉（點導覽、搜尋、點預覽）時固定標示目標區塊，直到使用者自己捲動
+let sectionNavLock = null;
+function lockSectionNav(section) {
+  sectionNavLock = section;
+  updateSectionNav();
+}
+['wheel', 'touchstart'].forEach(type =>
+  panelEl.addEventListener(type, () => { sectionNavLock = null; }, { passive: true }));
+
+// 標示目前所在的區塊：以標頭下方可視範圍的中線落在哪一區為準
+function updateSectionNav() {
+  const page = activePanelPage();
+  const buttons = [...sectionNav.querySelectorAll('button')];
+  if (!page || !buttons.length) return;
+  const sections = [...page.querySelectorAll('.panel-section[data-nav]')];
+  let current = sections.indexOf(sectionNavLock);
+  if (current < 0) {
+    const headH = panelHead.offsetHeight;
+    const line = panelEl.getBoundingClientRect().top + headH + (panelEl.clientHeight - headH) / 2;
+    current = 0;
+    sections.forEach((sec, i) => { if (sec.getBoundingClientRect().top <= line) current = i; });
+  }
+  buttons.forEach((b, i) => b.classList.toggle('active', i === current));
+  // 讓目前的標籤保持在導覽列可見範圍內（只捲導覽列本身）
+  const btn = buttons[current];
+  if (btn.offsetLeft < sectionNav.scrollLeft) sectionNav.scrollLeft = btn.offsetLeft - 8;
+  else if (btn.offsetLeft + btn.offsetWidth > sectionNav.scrollLeft + sectionNav.clientWidth)
+    sectionNav.scrollLeft = btn.offsetLeft + btn.offsetWidth - sectionNav.clientWidth + 8;
+}
+
+let sectionNavFrame = 0;
+panelEl.addEventListener('scroll', () => {
+  cancelAnimationFrame(sectionNavFrame);
+  sectionNavFrame = requestAnimationFrame(updateSectionNav);
+}, { passive: true });
+
+// 固定標頭的高度給 scroll-padding 用，跳到欄位時不會被標頭蓋住
+new ResizeObserver(() => {
+  panelEl.style.setProperty('--panel-head-h', panelHead.offsetHeight + 8 + 'px');
+}).observe(panelHead);
+
+renderSectionNav();
+
 // ⌘P / Ctrl+P 也走同一個檢查；按鈕上的提示依平台顯示
-if (!/Mac|iPhone|iPad/.test(navigator.platform)) document.getElementById('print-shortcut').textContent = 'Ctrl P';
+if (!/Mac|iPhone|iPad/.test(navigator.platform)) {
+  document.getElementById('print-shortcut').textContent = 'Ctrl P';
+  document.getElementById('field-search-shortcut').textContent = 'Ctrl K';
+}
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'p') {
     e.preventDefault();
