@@ -408,13 +408,6 @@ select { cursor: pointer; }
   box-shadow: none !important;
 }
 .qt > :not(.qt-page-number) { flex-shrink: 0; }
-.qt::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(245,245,240,0.025) 59px, rgba(245,245,240,0.025) 60px);
-  pointer-events: none;
-}
 .qt-header {
   display: flex;
   justify-content: space-between;
@@ -697,9 +690,6 @@ select { cursor: pointer; }
 .qt.light {
   background: #f5f3ee;
   color: #111;
-}
-.qt.light::before {
-  background-image: repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(0,0,0,0.025) 59px, rgba(0,0,0,0.025) 60px);
 }
 .qt.light .qt-header { border-color: rgba(0,0,0,0.1); }
 .qt.light .qt-meta { border-color: rgba(0,0,0,0.07); }
@@ -1039,6 +1029,74 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
   transition: opacity 0.3s;
 }
 
+/* 資料 / 備份：清除紀錄（放在最下方，與一般操作分開） */
+.data-danger {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.md-btn-danger {
+  background: transparent;
+  color: rgba(255,120,110,0.75);
+  border-color: rgba(255,120,110,0.25);
+}
+.md-btn-danger:hover { color: #ff8a80; border-color: rgba(255,120,110,0.55); }
+
+/* ── EXPORT CHECK DIALOG ── */
+.export-check {
+  margin: auto;
+  width: min(360px, calc(100vw - 32px));
+  background: var(--surface);
+  color: var(--text);
+  border: 0.5px solid var(--border-mid);
+  border-radius: 6px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  font-family: inherit;
+}
+.export-check::backdrop { background: rgba(0,0,0,0.55); }
+.export-check h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.export-check p {
+  font-size: 11px;
+  color: rgba(240,240,235,0.55);
+  line-height: 1.6;
+}
+.export-check ul {
+  list-style: none;
+  margin: 14px 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.export-check li {
+  font-size: 12px;
+  padding: 8px 10px;
+  background: var(--input-bg);
+  border: 0.5px solid var(--border-mid);
+  border-radius: 3px;
+}
+.export-check li::before { content: '○  '; color: var(--muted); }
+.export-check-actions { display: flex; gap: 8px; }
+.export-check-actions .md-btn { padding: 9px; font-size: 12px; }
+
+/* 匯出前檢查：跳回欄位時短暫標示 */
+@keyframes field-attention {
+  0%, 60% { border-color: rgba(255,120,110,0.8); box-shadow: 0 0 0 3px rgba(255,120,110,0.18); }
+  100%    { border-color: var(--border-mid); box-shadow: none; }
+}
+.field-attention { animation: field-attention 1.6s ease-out; }
+
+/* 預覽依寬度縮放：外框佔縮放後的尺寸，#preview 以 transform 縮小 */
+.preview-scaler { flex-shrink: 0; }
+#preview { transform-origin: top left; }
+
 
 /* ── LOGO UPLOAD ── */
 .logo-upload-area {
@@ -1229,6 +1287,9 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     page-break-after: auto;
   }
   .qt-pagination-source { display: none !important; }
+  .preview-scaler { width: auto !important; height: auto !important; }
+  #preview { transform: none !important; }
+  .export-check { display: none !important; }
 }
 
 /* ── COLLAPSIBLE SECTIONS ── */
@@ -1442,15 +1503,7 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
     <span id="save-indicator" style="font-size:9px;letter-spacing:0.08em;color:rgba(240,240,235,0.45);opacity:0;transition:opacity 0.35s;display:flex;align-items:center;"></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-    <button onclick="clearSavedState()"
-      style="background:none;border:0.5px solid var(--border-mid);color:var(--muted);
-             padding:6px 12px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit;
-             transition:all 0.15s;white-space:nowrap;"
-      onmouseover="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--text')"
-      onmouseout="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--muted')">
-      清除紀錄
-    </button>
-    <button class="btn-print" onclick="window.print()">列印 / 匯出 PDF</button>
+    <button class="btn-print" onclick="exportPdf()">列印 / 匯出 PDF</button>
   </div>
 </div>
 
@@ -1479,6 +1532,11 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
       </div>
       <input type="file" id="md-file-input" accept=".md,.txt,text/markdown,text/plain" style="display:none" onchange="handleMdUpload(event)">
       <div class="md-copy-confirm" id="md-confirm"></div>
+
+      <div class="data-danger">
+        <div class="md-hint">清除會刪除所有填寫內容與外觀設定，且無法復原。清除前建議先「匯出 .md 檔」備份。</div>
+        <button class="md-btn md-btn-danger" onclick="clearSavedState()">清除所有紀錄</button>
+      </div>
     </div>
 
     <!-- EDIT TAB -->
@@ -1969,12 +2027,25 @@ select { scrollbar-width: thin; scrollbar-color: rgba(240,240,235,0.15) transpar
 
   <!-- RIGHT PREVIEW -->
   <div class="preview-wrap">
-    <div class="qt-pages light" id="preview">
-      <!-- rendered by JS -->
+    <div class="preview-scaler">
+      <div class="qt-pages light" id="preview">
+        <!-- rendered by JS -->
+      </div>
     </div>
   </div>
 
 </div>
+
+<!-- 匯出前檢查：必填欄位未填時提醒 -->
+<dialog class="export-check" id="export-check">
+  <h2>還有欄位沒填</h2>
+  <p>以下欄位空白，匯出的 PDF 上會顯示空白或預設文字：</p>
+  <ul id="export-check-list"></ul>
+  <div class="export-check-actions">
+    <button class="md-btn md-btn-import" onclick="forceExportPdf()">仍要匯出</button>
+    <button class="md-btn md-btn-copy" onclick="goToMissingField()" autofocus>返回填寫</button>
+  </div>
+</dialog>
 
 <script>
 
@@ -2229,6 +2300,72 @@ function exportBaseName() {
 const defaultTitle = document.title;
 window.addEventListener('beforeprint', () => { document.title = exportBaseName(); });
 window.addEventListener('afterprint', () => { document.title = defaultTitle; });
+
+// 匯出前檢查：這些欄位空白時先提醒，避免把空白或「[客戶名稱]」寄給客戶
+const EXPORT_REQUIRED = [
+  { id: 'to-name',   group: 'group-to',       label: '客戶資訊 · 公司／姓名' },
+  { id: 'from-name', group: 'group-from',     label: '報價方 · 公司名稱' },
+  { id: 'qt-no',     group: 'group-doc-info', label: '報價資訊 · 文件編號' },
+];
+let missingExportFields = [];
+
+function exportPdf() {
+  missingExportFields = EXPORT_REQUIRED.filter(f => !document.getElementById(f.id).value.trim());
+  if (!missingExportFields.length) { window.print(); return; }
+  document.getElementById('export-check-list').replaceChildren(
+    ...missingExportFields.map(f => Object.assign(document.createElement('li'), { textContent: f.label }))
+  );
+  document.getElementById('export-check').showModal();
+}
+
+function forceExportPdf() {
+  document.getElementById('export-check').close();
+  setTimeout(() => window.print(), 50); // 等對話框關閉後再開列印視窗
+}
+
+// 返回填寫：切到編輯頁、展開所在區塊，捲動並聚焦到第一個空白欄位
+function goToMissingField() {
+  document.getElementById('export-check').close();
+  const field = missingExportFields[0];
+  if (!field) return;
+  switchTab('edit');
+  const body = document.getElementById('body-' + field.group);
+  const wasClosed = body && !body.classList.contains('open');
+  if (wasClosed) toggleGroup(field.group);
+  setTimeout(() => {
+    const input = document.getElementById(field.id);
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus({ preventScroll: true });
+    input.classList.remove('field-attention');
+    void input.offsetWidth; // 重新觸發動畫
+    input.classList.add('field-attention');
+  }, wasClosed ? 320 : 0); // 等區塊展開動畫結束
+}
+
+// ⌘P / Ctrl+P 也走同一個檢查
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'p') {
+    e.preventDefault();
+    if (!document.getElementById('export-check').open) exportPdf();
+  }
+});
+
+// ── PREVIEW FIT ──
+// 預覽區比 A4 窄時整體等比縮小，避免左側被裁切又捲不到
+function fitPreview() {
+  const wrap = document.querySelector('.preview-wrap');
+  const scaler = document.querySelector('.preview-scaler');
+  const preview = document.getElementById('preview');
+  const cs = getComputedStyle(wrap);
+  const available = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const scale = Math.min(1, available / preview.offsetWidth);
+  preview.style.transform = scale < 1 ? `scale(${scale})` : '';
+  scaler.style.width = preview.offsetWidth * scale + 'px';
+  scaler.style.height = preview.offsetHeight * scale + 'px';
+}
+const previewResizeObserver = new ResizeObserver(fitPreview);
+previewResizeObserver.observe(document.querySelector('.preview-wrap'));
+previewResizeObserver.observe(document.getElementById('preview'));
 
 // 匯出：將目前所有欄位以 Markdown 純文字下載成 .md 檔
 function downloadMd() {
@@ -3183,7 +3320,7 @@ function restoreState() {
 }
 
 function clearSavedState() {
-  const msg = '⚠️ 清除後無法復原\n\n這將刪除所有填寫內容與外觀設定（主題、字體、顏色等）。\n\n建議先切換到「文字」Tab，複製並保存當前設定後再繼續。\n\n確定要清除嗎？';
+  const msg = '⚠️ 清除後無法復原\n\n這將刪除所有填寫內容與外觀設定（主題、字體、顏色等）。\n\n建議先在「資料 / 備份」匯出 .md 檔備份後再繼續。\n\n確定要清除嗎？';
   if (!confirm(msg)) return;
   localStorage.removeItem(LS_KEY);
   location.reload();
