@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Luxmin 簽名產生器</title>
+<link rel="icon" href="https://luxmin.art/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #0a0b0d;
+    --paper: #101216;
+    --ink: #f4f5f1;
+    --ink-2: #9ea2a8;
+    --ink-3: #5d626a;
+    --rule: #f4f5f121;
+    --rule-strong: #f4f5f142;
+    --accent: #edc531;
+    --font: "Archivo", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    --margin: clamp(16px, 4vw, 64px);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--ground); color: var(--ink); font-family: var(--font);
+    font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--margin); }
+  .meta {
+    font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+    font-stretch: 84%; color: var(--ink-2); font-weight: 500;
+  }
+
+  header.top { border-bottom: 1px solid var(--rule); }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  header.top img { height: 24px; width: auto; display: block; }
+  header.top .home { display: block; border-radius: 4px; }
+  header.top .home:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+  .intro { padding: 56px 0 48px; }
+  .intro h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.1; font-weight: 500; letter-spacing: -.015em; margin: 0 0 16px; }
+  .intro p { color: var(--ink-2); margin: 0; max-width: 52ch; font-size: 17px; }
+
+  .app { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 48px; align-items: start; padding-bottom: 72px; }
+
+  /* form */
+  form { position: sticky; top: 24px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 24px; }
+  legend { padding: 0; margin-bottom: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { display: block; margin-bottom: 12px; }
+  .field > span { display: block; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+  .field > span i { font-style: normal; color: var(--accent); margin-left: 2px; }
+  .field input {
+    width: 100%; background: var(--paper); border: 1px solid var(--rule-strong); color: var(--ink);
+    font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 6px;
+  }
+  .field select {
+    width: 100%; background: var(--paper); border: 1px solid var(--rule-strong); color: var(--ink);
+    font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 6px;
+  }
+  .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .field input::placeholder { color: var(--ink-3); }
+  .field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .field input[aria-invalid="true"] { border-color: #e8806f; }
+  .hint { font-size: 12px; color: var(--ink-3); margin-top: 6px; min-height: 0; }
+  .hint.warn { color: #e8806f; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; margin-bottom: 10px; cursor: pointer; }
+  .check input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--accent); flex: none; }
+  .check small { display: block; color: var(--ink-3); font-size: 13px; }
+  .link-btn { background: none; border: 0; padding: 0; color: var(--ink-3); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .link-btn:hover { color: var(--ink-2); }
+
+  /* previews */
+  .pv-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .seg { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 3px; }
+  .seg button { border: 0; background: none; color: var(--ink-2); font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+  .sample-note { font-size: 13px; color: var(--accent); }
+  .card { margin-bottom: 32px; }
+  .mail { border-radius: 10px; overflow: hidden; border: 1px solid var(--rule-strong); }
+  .mail-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 8px 16px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-stretch: 84%; font-weight: 500;
+    background: #f1f3f4; color: #5f6368; border-bottom: 1px solid #e3e5e8;
+  }
+  .mail-body { padding: 24px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.5; overflow-x: auto; background: #fff; color: #222; }
+  .mail-body > p { margin: 0 0 13px; }
+  .mail-body .sig { margin-top: 24px; }
+  .dark .mail-bar { background: #2a2b2e; color: #9aa0a6; border-bottom-color: #36373a; }
+  .dark .mail-body { background: #1f2023; color: #e3e3e3; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; align-items: center; }
+  .btn {
+    font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; border-radius: 999px;
+    padding: 11px 22px; border: 1px solid var(--rule-strong); background: transparent; color: var(--ink);
+  }
+  .btn.primary { background: var(--accent); color: #2a2100; border-color: var(--accent); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn:focus-visible, .seg button:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .status { font-size: 13px; color: var(--accent); }
+
+  /* help */
+  .help { border-top: 1px solid var(--rule); padding: 56px 0 24px; }
+  .help h2 { font-size: clamp(22px, 2.2vw, 28px); font-weight: 500; margin: 0 0 24px; }
+  details { border-top: 1px solid var(--rule); padding: 16px 0; }
+  details:last-of-type { border-bottom: 1px solid var(--rule); }
+  summary { cursor: pointer; font-size: 17px; font-weight: 500; list-style: none; display: flex; justify-content: space-between; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--ink-3); font-weight: 400; }
+  details[open] summary::after { content: "−"; }
+  details ol, details p { color: var(--ink-2); font-size: 15px; max-width: 64ch; }
+  details ol { padding-left: 20px; margin: 16px 0 0; }
+  details li { margin-bottom: 6px; }
+  details b { color: var(--ink); font-weight: 500; }
+  footer.end { padding: 32px 0 64px; color: var(--ink-3); font-size: 13px; }
+  footer.end p { margin: 0 0 6px; max-width: 72ch; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: .92em; color: var(--ink-2); }
+
+  @media (max-width: 860px) {
+    .app { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    form { position: static; }
+  }
+  @media (max-width: 420px) {
+    .row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .mail-body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a href="/" class="home" aria-label="Luxmin Tools 首頁"><img src="https://luxmin.art/brand/luxmin-white.svg" alt="Luxmin"></a>
+    <span class="meta">Tools · Email signature</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <h1>Luxmin 簽名產生器</h1>
+    <p>填好自己的資料，複製之後貼進 Gmail。中英文各一份，版型跟官網同一套，每個人的簽名都會長得一樣。</p>
+  </div>
+
+  <div class="app">
+    <form id="form" autocomplete="on" novalidate>
+      <fieldset id="team-field" hidden>
+        <legend class="meta">成員</legend>
+        <label class="field"><span>從名單載入</span><select id="team"><option value="">自己填寫</option></select></label>
+      </fieldset>
+      <fieldset>
+        <legend class="meta">名字</legend>
+        <div class="row">
+          <label class="field"><span>英文<i>*</i></span><input name="enName" autocomplete="name" placeholder="Firstname Lastname"></label>
+          <label class="field"><span>中文</span><input name="zhName" placeholder="王小明"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="meta">職稱</legend>
+        <div class="row">
+          <label class="field"><span>英文</span><input name="enTitle" autocomplete="organization-title" placeholder="Experience Designer"></label>
+          <label class="field"><span>中文</span><input name="zhTitle" placeholder="體驗設計師"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="meta">聯絡方式</legend>
+        <label class="field"><span>Email<i>*</i></span><input name="email" type="email" autocomplete="email" placeholder="name@luxmin.art"></label>
+        <div class="hint" id="email-hint"></div>
+        <label class="field"><span>電話</span><input name="phone" type="tel" autocomplete="tel" placeholder="0912 345 678"></label>
+        <div class="hint" id="phone-hint">台灣手機和 02 市話會自動轉成 +886 格式。</div>
+      </fieldset>
+      <fieldset>
+        <legend class="meta">所在地</legend>
+        <div class="row">
+          <label class="field"><span>英文</span><input name="enCity" placeholder="Taipei, Taiwan"></label>
+          <label class="field"><span>中文</span><input name="zhCity" placeholder="台灣 台北"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="meta">選項</legend>
+        <label class="check"><input type="checkbox" name="social" checked><span>社群連結<small>Instagram / YouTube / Facebook</small></span></label>
+        <label class="check"><input type="checkbox" name="lines"><span>產品線<small>客製體驗 · ROLL6 · Misea。業務信件可以考慮加上。</small></span></label>
+      </fieldset>
+      <button type="button" class="link-btn" id="clear-data">清除我的資料</button>
+    </form>
+
+    <div>
+      <div class="pv-head">
+        <div class="seg" role="group" aria-label="預覽模式">
+          <button type="button" data-mode="light" aria-pressed="true">淺色</button>
+          <button type="button" data-mode="dark" aria-pressed="false">深色模式</button>
+        </div>
+        <span class="sample-note" id="sample-note">目前顯示範例資料，填入名字和 Email 後才能複製。</span>
+      </div>
+
+      <div class="card">
+        <div class="mail" data-frame>
+          <div class="mail-bar"><span>English</span><span id="len-en"></span></div>
+          <div class="mail-body"><p>Attached is the updated floor plan. See you on site Thursday.</p><p>Best,</p><div class="sig" id="sig-en"></div></div>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn primary" data-copy="en">複製英文版</button>
+          <button type="button" class="btn" data-html="en">HTML 原始碼</button>
+          <span class="status" data-status="en" role="status"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="mail" data-frame>
+          <div class="mail-bar"><span>中文</span><span id="len-zh"></span></div>
+          <div class="mail-body"><p>附件是更新後的平面配置圖，週四現場見。</p><p>謝謝！</p><div class="sig" id="sig-zh"></div></div>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn primary" data-copy="zh">複製中文版</button>
+          <button type="button" class="btn" data-html="zh">HTML 原始碼</button>
+          <span class="status" data-status="zh" role="status"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="help">
+    <h2>怎麼裝</h2>
+    <details open>
+      <summary>Gmail（網頁版）</summary>
+      <ol>
+        <li>右上角 <b>齒輪 → 查看所有設定 → 一般 → 簽名</b>。</li>
+        <li>按 <b>建立新簽名</b>，命名「Luxmin EN」，在這頁按 <b>複製英文版</b>，回 Gmail 按 <b>⌘V</b>（Windows 用 Ctrl+V）貼上。</li>
+        <li>再建一個「Luxmin 中文」，貼上 <b>複製中文版</b> 的內容。</li>
+        <li>在下方 <b>簽名預設值</b> 選平常最常用的那一個，新郵件和回覆可以分開設。</li>
+        <li>拉到頁面最下面按 <b>儲存變更</b>。寫信時用底部工具列的 <b>筆形圖示</b> 切換中英文。</li>
+        <li>Gmail 手機 App 會沿用網頁版的簽名，不用另外設定。</li>
+      </ol>
+    </details>
+    <details>
+      <summary>Apple Mail（Mac）</summary>
+      <ol>
+        <li><b>郵件 → 設定 → 簽名</b>，選帳號，按 <b>＋</b> 新增簽名。</li>
+        <li>取消勾選 <b>總是符合我的預設訊息字體</b>，不然字型和顏色會被蓋掉。</li>
+        <li>把右邊的預設文字刪掉，貼上這頁複製的簽名。</li>
+      </ol>
+    </details>
+    <details>
+      <summary>Outlook</summary>
+      <ol>
+        <li><b>設定 → 帳戶 → 簽名</b>（新版 Outlook 和網頁版），或 <b>檔案 → 選項 → 郵件 → 簽名</b>（傳統版）。</li>
+        <li>新增簽名後貼上。Outlook 的行距可能會比預覽稍微鬆一點，屬於正常現象。</li>
+      </ol>
+    </details>
+    <details>
+      <summary>貼上之後檢查什麼</summary>
+      <ol>
+        <li>寄一封給自己，在電腦和手機上各打開一次。</li>
+        <li>手機切到 <b>深色模式</b> 再看一次：圖示應該是深色方塊加白色星形，文字變成淺色。</li>
+        <li>圖示沒出現的話，通常是收件端預設封鎖圖片，點「顯示圖片」就會出現，不是簽名壞了。</li>
+      </ol>
+    </details>
+  </section>
+
+  <footer class="end">
+    <p>你填的資料只存在這台電腦的瀏覽器裡，不會上傳到任何地方。</p>
+    <p>要改圖示、官網連結、社群或產品線，請改 Web-Tools 裡 <code>Email_Signature_Generator.html</code> 開頭的 <code>CONFIG</code>，所有人的簽名會一起更新。</p>
+  </footer>
+</main>
+
+<script>
+// ============================================================
+// 品牌設定：要改圖示、連結、社群、產品線，只改這一段
+// ============================================================
+const CONFIG = {
+  // 簽名裡的圖示。必須是公開網址（Gmail 不支援 SVG，也不能用本機檔案）。
+  // 建議在官網放一個固定路徑，例如 https://luxmin.art/brand/email/mark.png，再改這裡。
+  markUrl: 'https://luxmin.art/icon-192.png',
+  company: 'Luxmin',
+  siteLabel: 'luxmin.art',
+  site: { en: 'https://luxmin.art/', zh: 'https://luxmin.art/zh-hant/' },
+  social: [
+    ['Instagram', 'https://www.instagram.com/luxmin.art/'],
+    ['YouTube', 'https://www.youtube.com/@luxminart'],
+    ['Facebook', 'https://www.facebook.com/luxmin.art'],
+  ],
+  lines: {
+    en: [['Custom Experiences', 'https://luxmin.art/what-we-do/#custom'], ['ROLL6', 'https://luxmin.art/what-we-do/#roll6'], ['Misea', 'https://luxmin.art/what-we-do/#misea']],
+    zh: [['客製體驗', 'https://luxmin.art/zh-hant/what-we-do/#custom'], ['ROLL6', 'https://luxmin.art/zh-hant/what-we-do/#roll6'], ['Misea', 'https://luxmin.art/zh-hant/what-we-do/#misea']],
+  },
+  defaultCity: { en: 'Taipei, Taiwan', zh: '台灣 台北' },
+  // 成員名單：表單最上方的「成員」選單選一個名字，就會把資料填好。新同事照同樣格式加一筆。
+  // 沒填的欄位（例如 enCity / zhCity）會用上面的預設值。
+  // 這個 repo 是公開的，電話不要寫在名單裡：每個人自己填一次，會記在自己的瀏覽器，選名單時也不會被清掉。
+  team: [
+    {
+      enName: 'Partical Weng', zhName: '翁偉傑',
+      enTitle: 'Director of Experience Design', zhTitle: '體驗設計總監',
+      email: 'particalweng@luxmin.art',
+    },
+  ],
+  // 顏色取自官網 token：主要資訊 / 次要資訊 / 分隔符號
+  colors: { ink: '#0a0b0d', ink3: '#5d626a', ink2: '#9ea2a8' },
+};
+// ============================================================
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif";
+// approximation of Apple Mail / Gmail app dark mode: text inverted, images untouched
+const DARK = { ink: '#ecedea', ink3: '#a0a4aa', ink2: '#62666d' };
+const SAMPLE = {
+  enName: 'Firstname Lastname', zhName: '王小明', enTitle: 'Experience Designer', zhTitle: '體驗設計師',
+  email: 'name@luxmin.art', phone: '+886 912 345 678',
+};
+const STORE_KEY = 'luxmin-signature-v1';
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const nb = s => esc(s).replace(/ /g, '&nbsp;');
+
+// Taiwan mobile and Taipei (02) landlines → +886 format; anything else is kept as typed
+function normalizePhone(raw) {
+  const s = raw.trim();
+  if (!s) return { text: '', href: '' };
+  const d = s.replace(/\D/g, '');
+  let local = null;
+  if (/^09\d{8}$/.test(d)) local = d.slice(1);
+  else if (/^8869\d{8}$/.test(d)) local = d.slice(3);
+  if (local) return { text: `+886 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`, href: `tel:+886${local}` };
+  if (/^02\d{8}$/.test(d)) local = d.slice(1);
+  else if (/^8862\d{8}$/.test(d)) local = d.slice(3);
+  if (local) return { text: `+886 2 ${local.slice(1, 5)} ${local.slice(5)}`, href: `tel:+886${local}` };
+  const href = s.startsWith('+') ? `tel:+${d}` : `tel:${d}`;
+  return { text: s, href };
+}
+
+function signature(person, lang, opts, p) {
+  const zh = lang === 'zh';
+  const name = zh ? (person.zhName || person.enName) : person.enName;
+  const alt = zh && person.zhName ? person.enName : '';
+  const title = zh ? (person.zhTitle || person.enTitle) : person.enTitle;
+  const city = (zh ? person.zhCity : person.enCity) || CONFIG.defaultCity[lang];
+  const site = CONFIG.site[lang];
+  const phone = normalizePhone(person.phone || '');
+
+  const link = (href, text, color) => `<a href="${esc(href)}" style="color:${color};text-decoration:none;">${text}</a>`;
+  const sep = wide => `<span style="color:${p.ink2};">${wide ? '&nbsp;&nbsp;·&nbsp;&nbsp;' : '&nbsp;·&nbsp;'}</span>`;
+  const row = (pad, size, color, inner) =>
+    `<tr><td style="padding:${pad}px 0 0 0;font-family:${FONT};font-size:${size}px;line-height:20px;color:${color};">${inner}</td></tr>`;
+
+  const nameHtml = `<span style="font-size:16px;font-weight:bold;color:${p.ink};">${esc(name)}</span>` +
+    (alt ? `&nbsp;&nbsp;<span style="font-size:13px;font-weight:normal;color:${p.ink3};">${esc(alt)}</span>` : '');
+  // title uses the website's meta style: Latin in tracked caps at 11px, Chinese at 12px with the same tracking
+  const latinTitle = !zh || !person.zhTitle;
+  const titleSize = latinTitle ? 11 : 12;
+  const titleHtml = (title ? `${esc(latinTitle ? title.toUpperCase() : title)}${sep()}` : '') +
+    `<span style="font-size:11px;color:${p.ink};">${esc(CONFIG.company.toUpperCase())}</span>`;
+  const line1 = [phone.text && link(phone.href, nb(phone.text), p.ink), link(`mailto:${person.email}`, esc(person.email), p.ink)].filter(Boolean).join(sep(true));
+  const line2 = link(site, esc(CONFIG.siteLabel), p.ink) + (city ? `${sep(true)}<span style="color:${p.ink3};">${nb(city)}</span>` : '');
+
+  let rows = '';
+  if (opts.lines) rows += row(12, 13, p.ink3, CONFIG.lines[lang].map(([t, u]) => link(u, esc(t), p.ink3)).join(sep()));
+  if (opts.social) rows += row(opts.lines ? 4 : 12, 12, p.ink3,
+    CONFIG.social.map(([t, u]) => link(u, esc(t), p.ink3)).join(`<span style="color:${p.ink2};">&nbsp;/&nbsp;</span>`));
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};color:${p.ink};">` +
+    `<tr><td style="padding:0 0 16px 0;"><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>` +
+    `<td valign="top" width="44" style="padding:0 14px 0 0;"><a href="${esc(site)}"><img src="${esc(CONFIG.markUrl)}" width="44" height="44" alt="${esc(CONFIG.company)}" style="display:block;width:44px;height:44px;border:0;"></a></td>` +
+    `<td valign="top" style="font-family:${FONT};">` +
+    `<div style="font-size:16px;line-height:24px;color:${p.ink};">${nameHtml}</div>` +
+    `<div style="font-size:${titleSize}px;line-height:20px;letter-spacing:0.06em;color:${p.ink3};">${titleHtml}</div>` +
+    `</td></tr></table></td></tr>` +
+    `<tr><td style="font-family:${FONT};font-size:13px;line-height:20px;color:${p.ink};">${line1}<br>${line2}</td></tr>` +
+    rows + `</table>`;
+}
+
+// ---- state ----
+const form = document.getElementById('form');
+const TEXT_FIELDS = ['enName', 'zhName', 'enTitle', 'zhTitle', 'email', 'phone', 'enCity', 'zhCity'];
+let mode = 'light';
+
+function readForm() {
+  const v = {};
+  TEXT_FIELDS.forEach(k => { v[k] = form.elements[k].value.trim(); });
+  v.social = form.elements.social.checked;
+  v.lines = form.elements.lines.checked;
+  return v;
+}
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (!saved || typeof saved !== 'object') return;
+    TEXT_FIELDS.forEach(k => { if (typeof saved[k] === 'string') form.elements[k].value = saved[k]; });
+    if (typeof saved.social === 'boolean') form.elements.social.checked = saved.social;
+    if (typeof saved.lines === 'boolean') form.elements.lines.checked = saved.lines;
+  } catch (e) {}
+}
+function save(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch (e) {} }
+
+const emailOk = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+const isReady = v => v.enName && emailOk(v.email);
+
+function person(v) {
+  // empty fields fall back to sample data so the preview never looks broken
+  if (isReady(v)) return v;
+  const out = { ...v };
+  ['enName', 'email'].forEach(k => { if (!out[k] || (k === 'email' && !emailOk(out[k]))) out[k] = SAMPLE[k]; });
+  if (!v.enName && !v.zhName) out.zhName = SAMPLE.zhName;
+  if (!v.enTitle && !v.zhTitle) { out.enTitle = SAMPLE.enTitle; out.zhTitle = SAMPLE.zhTitle; }
+  if (!v.phone) out.phone = SAMPLE.phone;
+  return out;
+}
+const html = (lang, v = readForm()) => signature(v, lang, { social: v.social, lines: v.lines }, CONFIG.colors);
+
+function update() {
+  const v = readForm();
+  save(v);
+  const ready = isReady(v);
+  const pv = person(v);
+  const pal = mode === 'dark' ? DARK : CONFIG.colors;
+  ['en', 'zh'].forEach(lang => {
+    document.getElementById('sig-' + lang).innerHTML = signature(pv, lang, { social: v.social, lines: v.lines }, pal);
+    document.getElementById('len-' + lang).textContent = ready ? `${html(lang, v).length.toLocaleString()} / 10,000 字元` : '';
+  });
+  document.getElementById('sample-note').hidden = ready;
+  document.querySelectorAll('[data-copy],[data-html]').forEach(b => { b.disabled = !ready; });
+
+  const emailHint = document.getElementById('email-hint');
+  const badEmail = v.email && !emailOk(v.email);
+  form.elements.email.setAttribute('aria-invalid', badEmail ? 'true' : 'false');
+  emailHint.textContent = badEmail ? 'Email 格式看起來不對。' : (v.email && !/@luxmin\.art$/i.test(v.email) ? '提醒：這不是 @luxmin.art 的信箱。' : '');
+  emailHint.className = 'hint' + (badEmail ? ' warn' : '');
+  const ph = normalizePhone(v.phone);
+  document.getElementById('phone-hint').textContent = v.phone && ph.text !== v.phone ? `會顯示成：${ph.text}` : '台灣手機和 02 市話會自動轉成 +886 格式。';
+}
+
+form.addEventListener('input', update);
+form.addEventListener('change', update);
+form.addEventListener('submit', e => e.preventDefault());
+document.getElementById('clear-data').addEventListener('click', () => {
+  if (!confirm('清除這台電腦上儲存的簽名資料？')) return;
+  form.reset();
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  update();
+});
+document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  document.querySelectorAll('[data-frame]').forEach(f => f.classList.toggle('dark', mode === 'dark'));
+  update();
+}));
+
+// ---- copy ----
+function say(lang, msg) {
+  const el = document.querySelector(`[data-status="${lang}"]`);
+  el.textContent = msg; clearTimeout(el._t); el._t = setTimeout(() => { el.textContent = ''; }, 4000);
+}
+function selectionCopy(markup) {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;color:#0a0b0d;';
+  box.innerHTML = markup; document.body.appendChild(box);
+  const r = document.createRange(); r.selectNodeContents(box);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  const ok = document.execCommand('copy'); s.removeAllRanges(); box.remove(); return ok;
+}
+function textCopy(text) {
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
+  document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
+}
+const plain = markup => { const d = document.createElement('div'); d.innerHTML = markup.replace(/<br>/g, '\n').replace(/<\/tr>/g, '\n'); return d.textContent.replace(/ /g, ' ').trim(); };
+
+document.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
+  const lang = btn.dataset.copy, h = html(lang);
+  const done = `已複製${lang === 'zh' ? '中文版' : '英文版'}，可以貼到 Gmail 了。`;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([h], { type: 'text/html' }),
+      'text/plain': new Blob([plain(h)], { type: 'text/plain' }),
+    })]);
+    say(lang, done);
+  } catch (e) {
+    say(lang, selectionCopy(h) ? done : '複製失敗，請改用 Chrome 或 Safari 開這個頁面。');
+  }
+}));
+document.querySelectorAll('[data-html]').forEach(btn => btn.addEventListener('click', async () => {
+  const lang = btn.dataset.html, h = html(lang);
+  try { await navigator.clipboard.writeText(h); say(lang, 'HTML 原始碼已複製。'); }
+  catch (e) { say(lang, textCopy(h) ? 'HTML 原始碼已複製。' : '複製失敗。'); }
+}));
+
+// ---- team picker ----
+const teamSelect = document.getElementById('team');
+if (CONFIG.team.length) {
+  document.getElementById('team-field').hidden = false;
+  CONFIG.team.forEach((m, i) => {
+    teamSelect.add(new Option(m.zhName ? `${m.zhName} ${m.enName}` : m.enName, String(i)));
+  });
+}
+teamSelect.addEventListener('change', () => {
+  const m = CONFIG.team[Number(teamSelect.value)];
+  if (!m) return;
+  // a roster entry without a phone keeps the number this person typed
+  TEXT_FIELDS.forEach(k => { if (k === 'phone' && !m.phone) return; form.elements[k].value = m[k] || ''; });
+  update();
+});
+
+load();
+const current = CONFIG.team.findIndex(m => m.email && m.email === form.elements.email.value.trim());
+if (current >= 0) teamSelect.value = String(current);
+update();
+</script>
+</body>
+</html>
