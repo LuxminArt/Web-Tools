@@ -207,11 +207,29 @@
       </fieldset>
       <fieldset>
         <legend class="meta">選項</legend>
+        <label class="check"><input type="checkbox" name="company" checked><span>公司名稱<small id="company-sum"></small></span></label>
+        <div class="opt-body" data-for="company">
+          <div class="row">
+            <label class="field"><span>英文</span><input name="companyEn" placeholder="Company"></label>
+            <label class="field"><span>中文</span><input name="companyZh" placeholder="留空就跟英文一樣"></label>
+          </div>
+          <div class="hint">放在職稱後面，英文會轉成大寫。</div>
+          <button type="button" class="link-btn" data-reset="company">恢復 Luxmin 預設</button>
+        </div>
+
+        <label class="check"><input type="checkbox" name="site" checked><span>官網<small id="site-sum"></small></span></label>
+        <div class="opt-body" data-for="site">
+          <label class="field"><span>顯示文字</span><input name="siteLabel" placeholder="留空就顯示網域"></label>
+          <label class="field"><span>英文版連結</span><input name="siteEn" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="https://example.com"></label>
+          <label class="field"><span>中文版連結</span><input name="siteZh" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="留空就跟英文版一樣"></label>
+          <button type="button" class="link-btn" data-reset="site">恢復 Luxmin 預設</button>
+        </div>
+
         <label class="check"><input type="checkbox" name="logo" checked><span>Logo<small>簽名左邊的圖示，可以換成自己的</small></span></label>
         <div class="opt-body" data-for="logo">
           <label class="field"><span>圖片網址</span><input name="logoUrl" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="https://example.com/logo.png"></label>
           <div class="hint" id="logo-hint"></div>
-          <label class="field"><span>點 Logo 連到</span><input name="logoHref" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="留空就連到 luxmin.art"></label>
+          <label class="field"><span>點 Logo 連到</span><input name="logoHref" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="留空就連到官網"></label>
           <button type="button" class="link-btn" data-reset="logo">恢復 Luxmin 預設</button>
         </div>
 
@@ -312,7 +330,7 @@
 
   <footer class="end">
     <p>你填的資料只存在這台電腦的瀏覽器裡，不會上傳到任何地方。</p>
-    <p>Logo、社群和產品線可以在上面的選項換成自己的，只會改到你的簽名。要改所有人的預設值或官網連結，請改 Web-Tools 裡 <code>Email_Signature_Generator.html</code> 開頭的 <code>CONFIG</code>，沒有自訂過的人會一起更新。</p>
+    <p>公司名稱、官網、Logo、社群和產品線都可以在上面的選項換成自己的，只會改到你的簽名。要改所有人的預設值，請改 Web-Tools 裡 <code>Email_Signature_Generator.html</code> 開頭的 <code>CONFIG</code>，沒有自訂過的人會一起更新。</p>
   </footer>
 </main>
 
@@ -390,6 +408,8 @@ function safeUrl(raw) {
   if (/^[^\s:/@]+\.[a-z]{2,}(\/|$)/i.test(u)) return 'https://' + u;
   return '';
 }
+const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
+const CJK = /[⺀-鿿豈-﫿＀-￯]/;
 // images must be public http(s) URLs: Gmail can't read local files or data: URIs
 function imgUrl(raw) {
   const u = (raw || '').trim();
@@ -405,8 +425,11 @@ function signature(person, lang, opts, p) {
   const alt = zh && person.zhName ? person.enName : '';
   const title = zh ? (person.zhTitle || person.enTitle) : person.enTitle;
   const city = (zh ? person.zhCity : person.enCity) || CONFIG.defaultCity[lang];
-  const site = CONFIG.site[lang];
   const phone = normalizePhone(person.phone || '');
+  const pick = (o, a, b) => zh ? (o[b] || o[a]) : (o[a] || o[b]);   // this language first, then the other one
+  const siteHref = opts.site ? safeUrl(pick(opts.site, 'en', 'zh')) : '';
+  const siteLabel = opts.site ? (opts.site.label || hostOf(siteHref)) : '';
+  const companyName = opts.company ? pick(opts.company, 'en', 'zh') : '';
 
   const link = (href, text, color) => `<a href="${esc(href)}" style="color:${color};text-decoration:none;">${text}</a>`;
   const item = (label, href, color) => href ? link(href, esc(label), color) : `<span style="color:${color};">${esc(label)}</span>`;
@@ -419,30 +442,38 @@ function signature(person, lang, opts, p) {
   // title uses the website's meta style: Latin in tracked caps at 11px, Chinese at 12px with the same tracking
   const latinTitle = !zh || !person.zhTitle;
   const titleSize = latinTitle ? 11 : 12;
-  const titleHtml = (title ? `${esc(latinTitle ? title.toUpperCase() : title)}${sep()}` : '') +
-    `<span style="font-size:11px;color:${p.ink};">${esc(CONFIG.company.toUpperCase())}</span>`;
+  const titleHtml = [
+    title && esc(latinTitle ? title.toUpperCase() : title),
+    companyName && `<span style="font-size:${CJK.test(companyName) ? 12 : 11}px;color:${p.ink};">${esc(companyName.toUpperCase())}</span>`,
+  ].filter(Boolean).join(sep());
   const line1 = [phone.text && link(phone.href, nb(phone.text), p.ink), link(`mailto:${person.email}`, esc(person.email), p.ink)].filter(Boolean).join(sep(true));
-  const line2 = link(site, esc(CONFIG.siteLabel), p.ink) + (city ? `${sep(true)}<span style="color:${p.ink3};">${nb(city)}</span>` : '');
+  const line2 = [
+    siteLabel && item(siteLabel, siteHref, p.ink),
+    city && `<span style="color:${p.ink3};">${nb(city)}</span>`,
+  ].filter(Boolean).join(sep(true));
 
-  const lines = opts.lines.map(i => item(zh ? (i.zh || i.en) : (i.en || i.zh), safeUrl(zh ? (i.zhUrl || i.enUrl) : (i.enUrl || i.zhUrl)), p.ink3));
+  const lines = opts.lines.map(i => item(pick(i, 'en', 'zh'), safeUrl(pick(i, 'enUrl', 'zhUrl')), p.ink3));
   const social = opts.social.map(i => item(i.label, safeUrl(i.url), p.ink3));
   let rows = '';
   if (lines.length) rows += row(12, 13, p.ink3, lines.join(sep()));
   if (social.length) rows += row(lines.length ? 4 : 12, 12, p.ink3, social.join(`<span style="color:${p.ink2};">&nbsp;/&nbsp;</span>`));
 
   const logo = opts.logo;
-  const logoCell = logo
-    ? `<td valign="top" width="${logo.w}" style="padding:0 14px 0 0;"><a href="${esc(logo.href || site)}"><img src="${esc(logo.src)}" width="${logo.w}" height="44" alt="${esc(logo.alt)}" style="display:block;width:${logo.w}px;height:44px;border:0;"></a></td>`
-    : '';
+  let logoCell = '';
+  if (logo) {
+    const img = `<img src="${esc(logo.src)}" width="${logo.w}" height="44" alt="${esc(logo.alt)}" style="display:block;width:${logo.w}px;height:44px;border:0;">`;
+    const href = logo.href || siteHref;
+    logoCell = `<td valign="top" width="${logo.w}" style="padding:0 14px 0 0;">${href ? `<a href="${esc(href)}">${img}</a>` : img}</td>`;
+  }
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};color:${p.ink};">` +
     `<tr><td style="padding:0 0 16px 0;"><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>` +
     logoCell +
     `<td valign="top" style="font-family:${FONT};">` +
     `<div style="font-size:16px;line-height:24px;color:${p.ink};">${nameHtml}</div>` +
-    `<div style="font-size:${titleSize}px;line-height:20px;letter-spacing:0.06em;color:${p.ink3};">${titleHtml}</div>` +
+    (titleHtml ? `<div style="font-size:${titleSize}px;line-height:20px;letter-spacing:0.06em;color:${p.ink3};">${titleHtml}</div>` : '') +
     `</td></tr></table></td></tr>` +
-    `<tr><td style="font-family:${FONT};font-size:13px;line-height:20px;color:${p.ink};">${line1}<br>${line2}</td></tr>` +
+    `<tr><td style="font-family:${FONT};font-size:13px;line-height:20px;color:${p.ink};">${line1}${line2 ? '<br>' + line2 : ''}</td></tr>` +
     rows + `</table>`;
 }
 
@@ -450,7 +481,10 @@ function signature(person, lang, opts, p) {
 const form = document.getElementById('form');
 const $ = id => document.getElementById(id);
 const TEXT_FIELDS = ['enName', 'zhName', 'enTitle', 'zhTitle', 'email', 'phone', 'enCity', 'zhCity'];
-const TOGGLES = ['logo', 'social', 'lines'];
+const TOGGLES = ['company', 'site', 'logo', 'social', 'lines'];
+// single-value brand fields, grouped by the option they belong to (used for save/load and 恢復預設)
+const RESET_FIELDS = { company: ['companyEn', 'companyZh'], site: ['siteLabel', 'siteEn', 'siteZh'], logo: ['logoUrl'] };
+const BRAND_TEXT = Object.values(RESET_FIELDS).flat();
 // editable rows under 社群連結 / 產品線: [key, label, placeholder]
 const ITEM_FIELDS = {
   social: [['label', '名稱', 'Instagram'], ['url', '網址', 'https://…']],
@@ -461,6 +495,8 @@ let logoW = 44;
 
 // Luxmin defaults from CONFIG; whatever a person changes is stored only in their own browser
 const defaults = () => ({
+  companyEn: CONFIG.company, companyZh: '',
+  siteLabel: CONFIG.siteLabel, siteEn: CONFIG.site.en, siteZh: CONFIG.site.zh,
   logoUrl: CONFIG.markUrl,
   socialItems: CONFIG.social.map(([label, url]) => ({ label, url })),
   lineItems: CONFIG.lines.en.map(([en, enUrl], i) => {
@@ -497,7 +533,7 @@ function readForm() {
   const v = {};
   TEXT_FIELDS.forEach(k => { v[k] = form.elements[k].value.trim(); });
   TOGGLES.forEach(k => { v[k] = form.elements[k].checked; });
-  v.logoUrl = form.elements.logoUrl.value.trim();
+  BRAND_TEXT.forEach(k => { v[k] = form.elements[k].value.trim(); });
   v.logoHref = form.elements.logoHref.value.trim();
   v.logoW = logoW;
   v.socialItems = readItems('social');
@@ -511,7 +547,7 @@ function load() {
   const D = defaults();
   TEXT_FIELDS.forEach(k => { if (typeof saved[k] === 'string') form.elements[k].value = saved[k]; });
   TOGGLES.forEach(k => { if (typeof saved[k] === 'boolean') form.elements[k].checked = saved[k]; });
-  form.elements.logoUrl.value = typeof saved.logoUrl === 'string' ? saved.logoUrl : D.logoUrl;
+  BRAND_TEXT.forEach(k => { form.elements[k].value = typeof saved[k] === 'string' ? saved[k] : D[k]; });
   form.elements.logoHref.value = typeof saved.logoHref === 'string' ? saved.logoHref : '';
   if (Number.isFinite(saved.logoW)) logoW = saved.logoW;
   renderItems('social', cleanItems(saved.socialItems, 'social') || D.socialItems);
@@ -521,10 +557,10 @@ function save(v) {
   // anything still at the Luxmin default is stored as null, so CONFIG edits reach everyone who didn't customize it
   const D = defaults();
   const out = { ...v,
-    logoUrl: v.logoUrl === D.logoUrl ? null : v.logoUrl,
     socialItems: same(v.socialItems, D.socialItems) ? null : v.socialItems,
     lineItems: same(v.lineItems, D.lineItems) ? null : v.lineItems,
   };
+  BRAND_TEXT.forEach(k => { if (v[k] === D[k]) out[k] = null; });
   try { localStorage.setItem(STORE_KEY, JSON.stringify(out)); } catch (e) {}
 }
 
@@ -543,8 +579,11 @@ function person(v) {
 }
 function brand(v) {
   const src = imgUrl(v.logoUrl);
+  const company = v.company && (v.companyEn || v.companyZh) ? { en: v.companyEn, zh: v.companyZh } : null;
   return {
-    logo: v.logo && src ? { src, href: safeUrl(v.logoHref), w: v.logoW || 44, alt: src === CONFIG.markUrl ? CONFIG.company : 'Logo' } : null,
+    company,
+    site: v.site && (v.siteLabel || v.siteEn || v.siteZh) ? { label: v.siteLabel, en: v.siteEn, zh: v.siteZh } : null,
+    logo: v.logo && src ? { src, href: safeUrl(v.logoHref), w: v.logoW || 44, alt: company ? (company.en || company.zh) : 'Logo' } : null,
     social: v.social ? v.socialItems.filter(i => i.label) : [],
     lines: v.lines ? v.lineItems.filter(i => i.en || i.zh) : [],
   };
@@ -557,10 +596,15 @@ function syncOptions(v) {
   $('social-sum').textContent = v.socialItems.filter(i => i.label).map(i => i.label).join(' / ') || '還沒有連結';
   $('lines-sum').textContent = v.lineItems.filter(i => i.zh || i.en).map(i => i.zh || i.en).join(' · ') || '還沒有項目';
   $('lines-head').hidden = !v.lineItems.length;
-  form.querySelector('[data-reset="logo"]').hidden = v.logoUrl === D.logoUrl && !v.logoHref;
+  const changed = k => RESET_FIELDS[k].some(f => v[f] !== D[f]);
+  $('company-sum').textContent = [v.companyEn, v.companyZh].filter(Boolean).join(' / ') || '還沒有填';
+  $('site-sum').textContent = v.siteLabel || hostOf(safeUrl(v.siteEn || v.siteZh)) || '還沒有填';
+  form.querySelector('[data-reset="company"]').hidden = !changed('company');
+  form.querySelector('[data-reset="site"]').hidden = !changed('site');
+  form.querySelector('[data-reset="logo"]').hidden = !changed('logo') && !v.logoHref;
   form.querySelector('[data-reset="social"]').hidden = same(v.socialItems, D.socialItems);
   form.querySelector('[data-reset="lines"]').hidden = same(v.lineItems, D.lineItems);
-  form.querySelectorAll('.item [type="url"], [name="logoHref"]').forEach(el => {
+  form.querySelectorAll('.item [type="url"], [name="logoHref"], [name="siteEn"], [name="siteZh"]').forEach(el => {
     el.setAttribute('aria-invalid', el.value.trim() && !safeUrl(el.value) ? 'true' : 'false');
   });
 }
@@ -583,7 +627,7 @@ function update() {
   const emailHint = document.getElementById('email-hint');
   const badEmail = v.email && !emailOk(v.email);
   form.elements.email.setAttribute('aria-invalid', badEmail ? 'true' : 'false');
-  emailHint.textContent = badEmail ? 'Email 格式看起來不對。' : (v.email && !/@luxmin\.art$/i.test(v.email) ? '提醒：這不是 @luxmin.art 的信箱。' : '');
+  emailHint.textContent = badEmail ? 'Email 格式看起來不對。' : (v.email && v.company && v.companyEn === CONFIG.company && !/@luxmin\.art$/i.test(v.email) ? '提醒：這不是 @luxmin.art 的信箱。' : '');
   emailHint.className = 'hint' + (badEmail ? ' warn' : '');
   const ph = normalizePhone(v.phone);
   document.getElementById('phone-hint').textContent = v.phone && ph.text !== v.phone ? `會顯示成：${ph.text}` : '台灣手機和 02 市話會自動轉成 +886 格式。';
@@ -641,8 +685,10 @@ form.addEventListener('click', e => {
     row.querySelector('input').focus();
   } else if (b.dataset.reset) {
     const D = defaults(), k = b.dataset.reset;
-    if (k === 'logo') { form.elements.logoUrl.value = D.logoUrl; form.elements.logoHref.value = ''; probeLogo(); }
-    else renderItems(k, k === 'social' ? D.socialItems : D.lineItems);
+    if (RESET_FIELDS[k]) {
+      RESET_FIELDS[k].forEach(f => { form.elements[f].value = D[f]; });
+      if (k === 'logo') { form.elements.logoHref.value = ''; probeLogo(); }
+    } else renderItems(k, k === 'social' ? D.socialItems : D.lineItems);
     body.querySelector('input').focus();
   } else return;
   update();
