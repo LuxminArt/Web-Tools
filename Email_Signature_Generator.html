@@ -73,6 +73,32 @@
   .check small { display: block; color: var(--ink-3); font-size: 13px; }
   .link-btn { background: none; border: 0; padding: 0; color: var(--ink-3); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .link-btn:hover { color: var(--ink-2); }
+  [hidden] { display: none !important; }
+
+  /* option editors: logo / social / product lines */
+  .opt-body { margin: 0 0 20px 28px; }
+  .opt-body .field { margin-bottom: 10px; }
+  .opt-body > .hint { margin: -4px 0 10px; }
+  .items { display: grid; gap: 8px; margin-bottom: 10px; }
+  .items-head, .item { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) 34px; gap: 6px; }
+  .items-head.line, .item.line { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px; }
+  .items-head { font-size: 12px; color: var(--ink-3); margin-bottom: 6px; }
+  .item.line + .item.line { border-top: 1px solid var(--rule); padding-top: 8px; }
+  .item input {
+    min-width: 0; width: 100%; background: var(--paper); border: 1px solid var(--rule-strong); color: var(--ink);
+    font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 6px;
+  }
+  .item input::placeholder { color: var(--ink-3); }
+  .item input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .item input[aria-invalid="true"] { border-color: #e8806f; }
+  .item .x {
+    background: none; border: 1px solid var(--rule); border-radius: 6px; color: var(--ink-3);
+    font: inherit; font-size: 16px; line-height: 1; padding: 0; cursor: pointer;
+  }
+  .item.line .x { grid-row: span 2; }
+  .item .x:hover { color: var(--ink); border-color: var(--rule-strong); }
+  .item .x:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .opt-actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
   /* previews */
   .pv-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -125,6 +151,7 @@
   }
   @media (max-width: 420px) {
     .row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .opt-body { margin-left: 0; }
     .mail-body { padding: 16px; }
   }
 </style>
@@ -180,8 +207,32 @@
       </fieldset>
       <fieldset>
         <legend class="meta">選項</legend>
-        <label class="check"><input type="checkbox" name="social" checked><span>社群連結<small>Instagram / YouTube / Facebook</small></span></label>
-        <label class="check"><input type="checkbox" name="lines"><span>產品線<small>客製體驗 · ROLL6 · Misea。業務信件可以考慮加上。</small></span></label>
+        <label class="check"><input type="checkbox" name="logo" checked><span>Logo<small>簽名左邊的圖示，可以換成自己的</small></span></label>
+        <div class="opt-body" data-for="logo">
+          <label class="field"><span>圖片網址</span><input name="logoUrl" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="https://example.com/logo.png"></label>
+          <div class="hint" id="logo-hint"></div>
+          <label class="field"><span>點 Logo 連到</span><input name="logoHref" type="url" inputmode="url" spellcheck="false" autocapitalize="off" placeholder="留空就連到 luxmin.art"></label>
+          <button type="button" class="link-btn" data-reset="logo">恢復 Luxmin 預設</button>
+        </div>
+
+        <label class="check"><input type="checkbox" name="social" checked><span>社群連結<small id="social-sum"></small></span></label>
+        <div class="opt-body" data-for="social">
+          <div class="items" id="social-items"></div>
+          <div class="opt-actions">
+            <button type="button" class="link-btn" data-add="social">＋ 新增連結</button>
+            <button type="button" class="link-btn" data-reset="social">恢復 Luxmin 預設</button>
+          </div>
+        </div>
+
+        <label class="check"><input type="checkbox" name="lines"><span>產品線<small><span id="lines-sum"></span>。業務信件可以考慮加上。</small></span></label>
+        <div class="opt-body" data-for="lines">
+          <div class="items-head line" id="lines-head"><span>英文</span><span>中文</span></div>
+          <div class="items" id="lines-items"></div>
+          <div class="opt-actions">
+            <button type="button" class="link-btn" data-add="lines">＋ 新增產品線</button>
+            <button type="button" class="link-btn" data-reset="lines">恢復 Luxmin 預設</button>
+          </div>
+        </div>
       </fieldset>
       <button type="button" class="link-btn" id="clear-data">清除我的資料</button>
     </form>
@@ -253,7 +304,7 @@
       <summary>貼上之後檢查什麼</summary>
       <ol>
         <li>寄一封給自己，在電腦和手機上各打開一次。</li>
-        <li>手機切到 <b>深色模式</b> 再看一次：圖示應該是深色方塊加白色星形，文字變成淺色。</li>
+        <li>手機切到 <b>深色模式</b> 再看一次：文字會變成淺色，Logo 要看得清楚（Luxmin 的圖示是深色方塊加白色星形）。</li>
         <li>圖示沒出現的話，通常是收件端預設封鎖圖片，點「顯示圖片」就會出現，不是簽名壞了。</li>
       </ol>
     </details>
@@ -261,13 +312,14 @@
 
   <footer class="end">
     <p>你填的資料只存在這台電腦的瀏覽器裡，不會上傳到任何地方。</p>
-    <p>要改圖示、官網連結、社群或產品線，請改 Web-Tools 裡 <code>Email_Signature_Generator.html</code> 開頭的 <code>CONFIG</code>，所有人的簽名會一起更新。</p>
+    <p>Logo、社群和產品線可以在上面的選項換成自己的，只會改到你的簽名。要改所有人的預設值或官網連結，請改 Web-Tools 裡 <code>Email_Signature_Generator.html</code> 開頭的 <code>CONFIG</code>，沒有自訂過的人會一起更新。</p>
   </footer>
 </main>
 
 <script>
 // ============================================================
 // 品牌設定：要改圖示、連結、社群、產品線，只改這一段
+// 這裡是所有人的預設值；每個人也可以在頁面的「選項」把 Logo、社群、產品線換成自己的。
 // ============================================================
 const CONFIG = {
   // 簽名裡的圖示。必須是公開網址（Gmail 不支援 SVG，也不能用本機檔案）。
@@ -329,6 +381,24 @@ function normalizePhone(raw) {
   return { text: s, href };
 }
 
+// links people type: http(s)/mailto/tel kept, bare domains get https://, emails get mailto:, anything else is dropped
+function safeUrl(raw) {
+  const u = (raw || '').trim();
+  if (!u) return '';
+  if (/^(https?:|mailto:|tel:)/i.test(u)) return u;
+  if (/^[^\s@:/]+@[^\s@]+\.[^\s@]+$/.test(u)) return 'mailto:' + u;
+  if (/^[^\s:/@]+\.[a-z]{2,}(\/|$)/i.test(u)) return 'https://' + u;
+  return '';
+}
+// images must be public http(s) URLs: Gmail can't read local files or data: URIs
+function imgUrl(raw) {
+  const u = (raw || '').trim();
+  if (/^https?:\/\//i.test(u)) return u;
+  if (/^[^\s:/@]+\.[a-z]{2,}\//i.test(u)) return 'https://' + u;
+  return '';
+}
+
+// opts = brand(v): { logo: {src, href, w, alt} | null, social: [{label, url}], lines: [{en, zh, enUrl, zhUrl}] }
 function signature(person, lang, opts, p) {
   const zh = lang === 'zh';
   const name = zh ? (person.zhName || person.enName) : person.enName;
@@ -339,6 +409,7 @@ function signature(person, lang, opts, p) {
   const phone = normalizePhone(person.phone || '');
 
   const link = (href, text, color) => `<a href="${esc(href)}" style="color:${color};text-decoration:none;">${text}</a>`;
+  const item = (label, href, color) => href ? link(href, esc(label), color) : `<span style="color:${color};">${esc(label)}</span>`;
   const sep = wide => `<span style="color:${p.ink2};">${wide ? '&nbsp;&nbsp;·&nbsp;&nbsp;' : '&nbsp;·&nbsp;'}</span>`;
   const row = (pad, size, color, inner) =>
     `<tr><td style="padding:${pad}px 0 0 0;font-family:${FONT};font-size:${size}px;line-height:20px;color:${color};">${inner}</td></tr>`;
@@ -353,14 +424,20 @@ function signature(person, lang, opts, p) {
   const line1 = [phone.text && link(phone.href, nb(phone.text), p.ink), link(`mailto:${person.email}`, esc(person.email), p.ink)].filter(Boolean).join(sep(true));
   const line2 = link(site, esc(CONFIG.siteLabel), p.ink) + (city ? `${sep(true)}<span style="color:${p.ink3};">${nb(city)}</span>` : '');
 
+  const lines = opts.lines.map(i => item(zh ? (i.zh || i.en) : (i.en || i.zh), safeUrl(zh ? (i.zhUrl || i.enUrl) : (i.enUrl || i.zhUrl)), p.ink3));
+  const social = opts.social.map(i => item(i.label, safeUrl(i.url), p.ink3));
   let rows = '';
-  if (opts.lines) rows += row(12, 13, p.ink3, CONFIG.lines[lang].map(([t, u]) => link(u, esc(t), p.ink3)).join(sep()));
-  if (opts.social) rows += row(opts.lines ? 4 : 12, 12, p.ink3,
-    CONFIG.social.map(([t, u]) => link(u, esc(t), p.ink3)).join(`<span style="color:${p.ink2};">&nbsp;/&nbsp;</span>`));
+  if (lines.length) rows += row(12, 13, p.ink3, lines.join(sep()));
+  if (social.length) rows += row(lines.length ? 4 : 12, 12, p.ink3, social.join(`<span style="color:${p.ink2};">&nbsp;/&nbsp;</span>`));
+
+  const logo = opts.logo;
+  const logoCell = logo
+    ? `<td valign="top" width="${logo.w}" style="padding:0 14px 0 0;"><a href="${esc(logo.href || site)}"><img src="${esc(logo.src)}" width="${logo.w}" height="44" alt="${esc(logo.alt)}" style="display:block;width:${logo.w}px;height:44px;border:0;"></a></td>`
+    : '';
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};color:${p.ink};">` +
     `<tr><td style="padding:0 0 16px 0;"><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>` +
-    `<td valign="top" width="44" style="padding:0 14px 0 0;"><a href="${esc(site)}"><img src="${esc(CONFIG.markUrl)}" width="44" height="44" alt="${esc(CONFIG.company)}" style="display:block;width:44px;height:44px;border:0;"></a></td>` +
+    logoCell +
     `<td valign="top" style="font-family:${FONT};">` +
     `<div style="font-size:16px;line-height:24px;color:${p.ink};">${nameHtml}</div>` +
     `<div style="font-size:${titleSize}px;line-height:20px;letter-spacing:0.06em;color:${p.ink3};">${titleHtml}</div>` +
@@ -371,26 +448,85 @@ function signature(person, lang, opts, p) {
 
 // ---- state ----
 const form = document.getElementById('form');
+const $ = id => document.getElementById(id);
 const TEXT_FIELDS = ['enName', 'zhName', 'enTitle', 'zhTitle', 'email', 'phone', 'enCity', 'zhCity'];
+const TOGGLES = ['logo', 'social', 'lines'];
+// editable rows under 社群連結 / 產品線: [key, label, placeholder]
+const ITEM_FIELDS = {
+  social: [['label', '名稱', 'Instagram'], ['url', '網址', 'https://…']],
+  lines: [['en', '英文名稱', 'Custom Experiences'], ['zh', '中文名稱', '客製體驗'], ['enUrl', '英文版連結', 'https://…'], ['zhUrl', '中文版連結', '留空就跟英文版一樣']],
+};
 let mode = 'light';
+let logoW = 44;
+
+// Luxmin defaults from CONFIG; whatever a person changes is stored only in their own browser
+const defaults = () => ({
+  logoUrl: CONFIG.markUrl,
+  socialItems: CONFIG.social.map(([label, url]) => ({ label, url })),
+  lineItems: CONFIG.lines.en.map(([en, enUrl], i) => {
+    const [zh = '', zhUrl = ''] = CONFIG.lines.zh[i] || [];
+    return { en, zh, enUrl, zhUrl };
+  }),
+});
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+function itemRow(kind, data = {}) {
+  const el = document.createElement('div');
+  el.className = kind === 'lines' ? 'item line' : 'item';
+  ITEM_FIELDS[kind].forEach(([k, label, ph], i) => {
+    const input = document.createElement('input');
+    input.dataset.k = k;
+    input.title = label;
+    input.setAttribute('aria-label', label);
+    input.placeholder = ph;
+    input.value = data[k] || '';
+    if (/url/i.test(k)) { input.type = 'url'; input.inputMode = 'url'; input.spellcheck = false; input.setAttribute('autocapitalize', 'off'); }
+    el.appendChild(input);
+    if (i === 1) el.insertAdjacentHTML('beforeend', '<button type="button" class="x" data-remove aria-label="移除這一項" title="移除">×</button>');
+  });
+  return el;
+}
+const renderItems = (kind, items) => $(kind + '-items').replaceChildren(...items.map(it => itemRow(kind, it)));
+const readItems = kind => [...$(kind + '-items').querySelectorAll('.item')].map(el =>
+  Object.fromEntries(ITEM_FIELDS[kind].map(([k]) => [k, el.querySelector(`[data-k="${k}"]`).value.trim()])));
+const cleanItems = (a, kind) => Array.isArray(a)
+  ? a.filter(x => x && typeof x === 'object').map(x => Object.fromEntries(ITEM_FIELDS[kind].map(([k]) => [k, typeof x[k] === 'string' ? x[k] : ''])))
+  : null;
 
 function readForm() {
   const v = {};
   TEXT_FIELDS.forEach(k => { v[k] = form.elements[k].value.trim(); });
-  v.social = form.elements.social.checked;
-  v.lines = form.elements.lines.checked;
+  TOGGLES.forEach(k => { v[k] = form.elements[k].checked; });
+  v.logoUrl = form.elements.logoUrl.value.trim();
+  v.logoHref = form.elements.logoHref.value.trim();
+  v.logoW = logoW;
+  v.socialItems = readItems('social');
+  v.lineItems = readItems('lines');
   return v;
 }
 function load() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
-    if (!saved || typeof saved !== 'object') return;
-    TEXT_FIELDS.forEach(k => { if (typeof saved[k] === 'string') form.elements[k].value = saved[k]; });
-    if (typeof saved.social === 'boolean') form.elements.social.checked = saved.social;
-    if (typeof saved.lines === 'boolean') form.elements.lines.checked = saved.lines;
-  } catch (e) {}
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) {}
+  if (!saved || typeof saved !== 'object') saved = {};
+  const D = defaults();
+  TEXT_FIELDS.forEach(k => { if (typeof saved[k] === 'string') form.elements[k].value = saved[k]; });
+  TOGGLES.forEach(k => { if (typeof saved[k] === 'boolean') form.elements[k].checked = saved[k]; });
+  form.elements.logoUrl.value = typeof saved.logoUrl === 'string' ? saved.logoUrl : D.logoUrl;
+  form.elements.logoHref.value = typeof saved.logoHref === 'string' ? saved.logoHref : '';
+  if (Number.isFinite(saved.logoW)) logoW = saved.logoW;
+  renderItems('social', cleanItems(saved.socialItems, 'social') || D.socialItems);
+  renderItems('lines', cleanItems(saved.lineItems, 'lines') || D.lineItems);
 }
-function save(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch (e) {} }
+function save(v) {
+  // anything still at the Luxmin default is stored as null, so CONFIG edits reach everyone who didn't customize it
+  const D = defaults();
+  const out = { ...v,
+    logoUrl: v.logoUrl === D.logoUrl ? null : v.logoUrl,
+    socialItems: same(v.socialItems, D.socialItems) ? null : v.socialItems,
+    lineItems: same(v.lineItems, D.lineItems) ? null : v.lineItems,
+  };
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(out)); } catch (e) {}
+}
 
 const emailOk = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const isReady = v => v.enName && emailOk(v.email);
@@ -405,16 +541,40 @@ function person(v) {
   if (!v.phone) out.phone = SAMPLE.phone;
   return out;
 }
-const html = (lang, v = readForm()) => signature(v, lang, { social: v.social, lines: v.lines }, CONFIG.colors);
+function brand(v) {
+  const src = imgUrl(v.logoUrl);
+  return {
+    logo: v.logo && src ? { src, href: safeUrl(v.logoHref), w: v.logoW || 44, alt: src === CONFIG.markUrl ? CONFIG.company : 'Logo' } : null,
+    social: v.social ? v.socialItems.filter(i => i.label) : [],
+    lines: v.lines ? v.lineItems.filter(i => i.en || i.zh) : [],
+  };
+}
+const html = (lang, v = readForm()) => signature(v, lang, brand(v), CONFIG.colors);
+
+function syncOptions(v) {
+  const D = defaults();
+  TOGGLES.forEach(k => { form.querySelector(`[data-for="${k}"]`).hidden = !v[k]; });
+  $('social-sum').textContent = v.socialItems.filter(i => i.label).map(i => i.label).join(' / ') || '還沒有連結';
+  $('lines-sum').textContent = v.lineItems.filter(i => i.zh || i.en).map(i => i.zh || i.en).join(' · ') || '還沒有項目';
+  $('lines-head').hidden = !v.lineItems.length;
+  form.querySelector('[data-reset="logo"]').hidden = v.logoUrl === D.logoUrl && !v.logoHref;
+  form.querySelector('[data-reset="social"]').hidden = same(v.socialItems, D.socialItems);
+  form.querySelector('[data-reset="lines"]').hidden = same(v.lineItems, D.lineItems);
+  form.querySelectorAll('.item [type="url"], [name="logoHref"]').forEach(el => {
+    el.setAttribute('aria-invalid', el.value.trim() && !safeUrl(el.value) ? 'true' : 'false');
+  });
+}
 
 function update() {
   const v = readForm();
   save(v);
+  syncOptions(v);
   const ready = isReady(v);
   const pv = person(v);
+  const b = brand(v);
   const pal = mode === 'dark' ? DARK : CONFIG.colors;
   ['en', 'zh'].forEach(lang => {
-    document.getElementById('sig-' + lang).innerHTML = signature(pv, lang, { social: v.social, lines: v.lines }, pal);
+    document.getElementById('sig-' + lang).innerHTML = signature(pv, lang, b, pal);
     document.getElementById('len-' + lang).textContent = ready ? `${html(lang, v).length.toLocaleString()} / 10,000 字元` : '';
   });
   document.getElementById('sample-note').hidden = ready;
@@ -436,6 +596,55 @@ document.getElementById('clear-data').addEventListener('click', () => {
   if (!confirm('清除這台電腦上儲存的簽名資料？')) return;
   form.reset();
   try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  logoW = 44;
+  load();
+  probeLogo();
+  update();
+});
+
+// ---- logo / social / product-line editors ----
+let probeId = 0, probeTimer;
+// checks the logo URL loads and reads its aspect ratio: height stays 44px, width follows the image
+function probeLogo() {
+  const raw = form.elements.logoUrl.value.trim(), src = imgUrl(raw), id = ++probeId;
+  const set = (msg, warn) => {
+    $('logo-hint').textContent = msg;
+    $('logo-hint').className = 'hint' + (warn ? ' warn' : '');
+    form.elements.logoUrl.setAttribute('aria-invalid', warn ? 'true' : 'false');
+  };
+  if (!raw) return set('沒有圖片網址，簽名不會放 Logo。');
+  if (!src) return set('要用 https:// 開頭的公開網址，Gmail 讀不到電腦裡的檔案。', true);
+  if (/\.svg($|[?#])/i.test(src)) return set('Gmail 不支援 SVG，請改用 PNG 或 JPG。', true);
+  const img = new Image();
+  img.onload = () => {
+    if (id !== probeId) return;
+    const r = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
+    logoW = Math.max(22, Math.min(132, Math.round(44 * r)));
+    set(src === CONFIG.markUrl ? '' : `高度固定 44px，會顯示成 ${logoW} × 44。深色模式不會反轉圖片，透明底的深色 Logo 會看不見，建議用自帶底色的圖。`);
+    update();
+  };
+  img.onerror = () => { if (id === probeId) set('圖片載入不到，確認網址正確、而且是公開的。', true); };
+  img.src = src;
+}
+form.elements.logoUrl.addEventListener('input', () => { clearTimeout(probeTimer); probeTimer = setTimeout(probeLogo, 400); });
+
+form.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const body = b.closest('.opt-body');
+  if (b.hasAttribute('data-remove')) {
+    b.closest('.item').remove();
+    body.querySelector('[data-add]').focus();
+  } else if (b.dataset.add) {
+    const row = itemRow(b.dataset.add);
+    $(b.dataset.add + '-items').appendChild(row);
+    row.querySelector('input').focus();
+  } else if (b.dataset.reset) {
+    const D = defaults(), k = b.dataset.reset;
+    if (k === 'logo') { form.elements.logoUrl.value = D.logoUrl; form.elements.logoHref.value = ''; probeLogo(); }
+    else renderItems(k, k === 'social' ? D.socialItems : D.lineItems);
+    body.querySelector('input').focus();
+  } else return;
   update();
 });
 document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
@@ -500,6 +709,7 @@ teamSelect.addEventListener('change', () => {
 });
 
 load();
+probeLogo();
 const current = CONFIG.team.findIndex(m => m.email && m.email === form.elements.email.value.trim());
 if (current >= 0) teamSelect.value = String(current);
 update();
